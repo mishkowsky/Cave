@@ -40,7 +40,7 @@ public class GameOverScreen implements Screen {
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
         Button restart = new Button(btnStyle);
-        restart.setPosition(140,120);
+        restart.setPosition(480,200);
         Button respawn = new Button(btnStyle);
         respawn.setPosition(70,60);
 

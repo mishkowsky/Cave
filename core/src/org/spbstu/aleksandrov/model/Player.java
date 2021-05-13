@@ -1,11 +1,13 @@
 package org.spbstu.aleksandrov.model;
 
+import org.spbstu.aleksandrov.model.entities.Platform;
+
 public class Player {
 
     private int highScore = 0;
     private int balance = 0;
     private int currentScore = 0;
-    private int currentPlatform = 0;
+    private Platform currentPlatform;
 
     public Player() {
 
@@ -54,11 +56,11 @@ public class Player {
         this.currentScore = currentScore;
     }
 
-    public int getCurrentPlatform() {
+    public Platform getCurrentPlatform() {
         return currentPlatform;
     }
 
-    public void setCurrentPlatform(int currentPlatform) {
+    public void setCurrentPlatform(Platform currentPlatform) {
         this.currentPlatform = currentPlatform;
     }
 }

@@ -32,7 +32,7 @@ public class GameScreen implements Screen {
             List.of(
                 new Rocket(new Vector2( (28.5f) * SCALE,(3700 + 25f) * SCALE)),
                 new Ground(new Vector2(0,0)),
-                new Platform(new Vector2(0,3700 * SCALE)),
+                new Platform(new Vector2(0,3700 * SCALE)), new Platform(new Vector2(70 * SCALE, 2500 * SCALE)),
                 new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true)
             )
     );
@@ -55,7 +55,8 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1f, 1f, 1f, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         myWorld.stepWorld();
-        if (myWorld.rocket.getState() == Entity.State.POP) game.setScreen(new GameOverScreen(game, myWorld));
+        Rocket rocket = myWorld.getRocket();
+        if (rocket.getState() == Entity.State.POP) game.setScreen(new GameOverScreen(game, myWorld));
         processInput();
         renderer.render();
 
@@ -63,8 +64,8 @@ public class GameScreen implements Screen {
 
     private void processInput() {
 
-        Body rocketBody = myWorld.physicBodies.get(0);
-        Rocket rocket = (Rocket) myWorld.entities.get(0);
+        Body rocketBody = myWorld.getPhysicBodies().get(0);
+        Rocket rocket = (Rocket) myWorld.getEntities().get(0);
         float x = 0;
         float y = (float) (2 * Math.cos(rocketBody.getAngle()));
 

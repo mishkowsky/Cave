@@ -11,17 +11,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.spbstu.aleksandrov.model.entities.Entity.State.IDLE;
+import static org.spbstu.aleksandrov.model.entities.Entity.State.POP;
 
 public class MyWorld {
 
-    public Player player;
-    public Rocket rocket;
-    public Body rocketBody;
+    private final Player player;
+    private final Rocket rocket;
+    private Body rocketBody;
+    private World world;
+    private final List<? extends Entity> entities;
+    private final List<Body> physicBodies = new ArrayList<>();
+    private boolean checkDistance = false;
 
-    public List<? extends Entity> entities = new ArrayList<>();
-    public List<Body> physicBodies = new ArrayList<>();
-
-    PhysicsShapeCache physicsShapeCache;
+    private PhysicsShapeCache physicsShapeCache;
 
     static final float STEP_TIME = 1f / 60f;
     static final int VELOCITY_ITERATIONS = 6;
@@ -30,15 +32,12 @@ public class MyWorld {
 
     float accumulator = 0;
 
-    public World world;
-
-    public void create() {
+    private void create() {
         Box2D.init();
         world = new World(new Vector2(0, -10f), true);
         world.setContactListener(new Listener(this));
         physicsShapeCache = new PhysicsShapeCache("physicBodies.xml");
         createBodies();
-        rocket = (Rocket) entities.get(0);
         rocketBody = physicBodies.get(0);
     }
 
@@ -60,12 +59,6 @@ public class MyWorld {
         return body;
     }
 
-    public World getWorld() {
-        return world;
-    }
-
-
-    public boolean delete = false;
     public void stepWorld() {
         float delta = Gdx.graphics.getDeltaTime();
 
@@ -77,8 +70,14 @@ public class MyWorld {
         }
 
         awakeNearAsteroid();
+        getCurrentPlatform();
+        if (checkDistance) disableLastPlatform();
         ((Rocket) entities.get(0)).setAngle();
         if (rocketBody.getLinearVelocity().equals(new Vector2(0, 0))) rocket.setState(IDLE);
+    }
+
+    private void disableLastPlatform() {
+        //TODO
     }
 
     private void awakeNearAsteroid() {
@@ -90,8 +89,8 @@ public class MyWorld {
                     boolean isDynamic = ((Asteroid) asteroid).isDynamic();
 
                     Vector2 position = asteroidBody.getPosition();
-                    if (position.dst(physicBodies.get(0).getPosition()) < 20 && isDynamic) {
-                        if (position.y < physicBodies.get(0).getPosition().y) {
+                    if (position.dst(rocketBody.getPosition()) < 20 && isDynamic) {
+                        if (position.y < rocketBody.getPosition().y) {
                             if (!(asteroidBody.getType() == BodyDef.BodyType.StaticBody)) {
                                 //TODO some shaking before falling?
                             }
@@ -105,19 +104,28 @@ public class MyWorld {
     }
 
     private void getCurrentPlatform () {
-        for (Entity platform : entities) {
-            if (platform instanceof Platform) {
 
-                int i = entities.indexOf(platform);
-                Body body = physicBodies.get(i);
-                float lastDistance = body.getPosition().dst(physicBodies.get(0).getPosition());
+        Platform currentPlatform = player.getCurrentPlatform();
 
-                if (body.getPosition().dst(physicBodies.get(0).getPosition()) < lastDistance &&
-                        body.getPosition().y > physicBodies.get(0).getPosition().y) {
-                    player.setCurrentPlatform(((Platform) platform).getId());
-                }
+        //TODO get first platform in entities
+        if (currentPlatform == null) {
+            player.setCurrentPlatform((Platform) entities.get(2));
+            currentPlatform = player.getCurrentPlatform();
+        }
+
+        int index;
+
+        for (index = entities.indexOf(currentPlatform); index < entities.size(); index++) {
+
+            if (entities.get(index) instanceof Platform) {
+
+                Platform platform = (Platform) entities.get(index);
+
+                if (!platform.getFuel() && platform.getId() > currentPlatform.getId())
+                    player.setCurrentPlatform(platform);
+
             //TODO
-            }
+            } else break;
         }
     }
 
@@ -154,7 +162,7 @@ public class MyWorld {
                             Platform platform = (Platform) entities.get(i);
 
                             player.addScore(100);
-                            if (platform.fuel) rocket.setFullFuel();
+                            if (platform.getFuel()) rocket.setFullFuel();
                             platform.refuel();
                         }
                     } else rocket.setState(Entity.State.POP);
@@ -193,6 +201,7 @@ public class MyWorld {
         Gdx.app.log("endContact", "between " + bodyA.getUserData() + " and " + bodyB.getUserData());
 
         //rocket.getState() != Rocket.State.IDLE && bodyB.getPosition().dst(rocketBody.getPosition()) > 10
+        checkDistance = true;
 
         Entity platform;
         if (bodyA.getUserData() instanceof Platform) platform = (Entity) bodyA.getUserData();
@@ -215,4 +224,25 @@ public class MyWorld {
 
         create();
     }
+
+    public Player getPlayer() {
+        return player;
+    }
+
+    public Rocket getRocket() {
+        return rocket;
+    }
+
+    public List<? extends Entity> getEntities() {
+        return entities;
+    }
+
+    public List<Body> getPhysicBodies() {
+        return physicBodies;
+    }
+
+    public World getWorld() {
+        return world;
+    }
+
 }

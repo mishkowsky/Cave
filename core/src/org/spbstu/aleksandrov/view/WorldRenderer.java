@@ -13,6 +13,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import org.spbstu.aleksandrov.model.MyWorld;
+import org.spbstu.aleksandrov.model.Player;
 import org.spbstu.aleksandrov.model.entities.Entity;
 import org.spbstu.aleksandrov.model.entities.Rocket;
 
@@ -23,8 +24,14 @@ import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
 
 public class WorldRenderer {
 
-    MyWorld myWorld;
-    Body rocketBody;
+    private final MyWorld myWorld;
+    private final Rocket rocket;
+    private final Body rocketBody;
+    private final Player player;
+    private final World world;
+
+    private final List<? extends Entity> entities;
+    private final List<Body> physicBodies;
 
     private static final float CAMERA_WIDTH = 45f;
     private static final float CAMERA_HEIGHT = 20f;
@@ -43,8 +50,16 @@ public class WorldRenderer {
     private Texture platformTexture;
 
     public WorldRenderer(MyWorld myWorld) {
+
         this.myWorld = myWorld;
-        this.rocketBody = myWorld.physicBodies.get(0);
+
+        this.world = myWorld.getWorld();
+        this.entities = myWorld.getEntities();
+        this.physicBodies = myWorld.getPhysicBodies();
+        this.rocket = myWorld.getRocket();
+        this.rocketBody = physicBodies.get(0);
+        this.player = myWorld.getPlayer();
+
         create();
     }
 
@@ -71,13 +86,13 @@ public class WorldRenderer {
 
         batch.begin();
 
-        for (Entity entity : myWorld.entities) {
+        for (Entity entity : entities) {
             drawEntity(entity);
         }
 
 
         for (Entity entity : removeEntities) {
-            int i = myWorld.entities.indexOf(entity);
+            int i = entities.indexOf(entity);
             //myWorld.entities.remove(entity);
             //myWorld.physicBodies.remove(i);
         }
@@ -99,8 +114,8 @@ public class WorldRenderer {
         Vector2 position = rocketBody.getPosition();
 
         camera.position.set(
-                position.x - rocketBody.getLinearVelocity().x * 0.1f/* + myWorld.rocket.getWIDTH() / 2*/,
-                position.y  - rocketBody.getLinearVelocity().y * 0.1f/* + myWorld.rocket.getHEIGHT() / 2*/,
+                position.x - rocketBody.getLinearVelocity().x * 0.1f ,
+                position.y  - rocketBody.getLinearVelocity().y * 0.1f,
                 0);
 
         camera.update();
@@ -113,8 +128,8 @@ public class WorldRenderer {
     private void drawEntity(Entity entity){
 
         Texture texture = getTexture(entity);
-        int i = myWorld.entities.indexOf(entity);
-        Body body = myWorld.physicBodies.get(i);
+        int i = entities.indexOf(entity);
+        Body body = physicBodies.get(i);
 
         if (body == null || entity.getState() == Entity.State.POP) {
             startAnimation(entity.getPosition());
@@ -129,8 +144,8 @@ public class WorldRenderer {
 
             if (entity instanceof Rocket) {
                 body.setTransform(body.getPosition().x, body.getPosition().y,
-                        myWorld.rocket.getAngle() * (float) DEGREES_TO_RADIANS);
-                sprite.setRotation(myWorld.rocket.getAngle());
+                        rocket.getAngle() * (float) DEGREES_TO_RADIANS);
+                sprite.setRotation(rocket.getAngle());
             }
 
             if (entity instanceof Rocket) {
@@ -180,10 +195,10 @@ public class WorldRenderer {
         shapeRenderer.setColor(Color.valueOf("2B2B2B"));
         shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f, 0.25f);
 
-        String leftColor = countColor((int) myWorld.rocket.getFuel(), 90);
-        String rightColor = countColor((int) myWorld.rocket.getFuel(), 255);
+        String leftColor = countColor((int) rocket.getFuel(), 90);
+        String rightColor = countColor((int) rocket.getFuel(), 255);
 
-        shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f * myWorld.rocket.getFuel() / 100, 0.25f,
+        shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f * rocket.getFuel() / 100, 0.25f,
                 new Color(Color.valueOf(leftColor)), new Color(Color.valueOf(rightColor)),
                 new Color(Color.valueOf(rightColor)), new Color(Color.valueOf(leftColor)));
 
@@ -222,10 +237,11 @@ public class WorldRenderer {
         font.setColor(0f, 0f, 0f, 1f);
 
         String string = (int) position.x + "; " + (int) position.y +
-                System.getProperty("line.separator") + "Fuel: " + (int) myWorld.rocket.getFuel() +
-                System.getProperty("line.separator") + "Score: " + myWorld.player.getCurrentScore() +
-                System.getProperty("line.separator") + "High score: " + myWorld.player.getHighScore() +
-                System.getProperty("line.separator") + "State: " + myWorld.rocket.getState();
+                System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
+                System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
+                System.getProperty("line.separator") + "High score: " + player.getHighScore() +
+                System.getProperty("line.separator") + "State: " + rocket.getState() +
+                System.getProperty("line.separator") + "CurPlat: " + player.getCurrentPlatform().getId();
 
         font.draw(batch, string, position.x - 50  * SCALE, position.y + 200 * SCALE);
     }
