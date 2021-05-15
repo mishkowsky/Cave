@@ -4,11 +4,15 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
@@ -33,27 +37,14 @@ public class GameOverScreen implements Screen {
 
     private void create() {
 
-        TextureAtlas mAtlas = new TextureAtlas("packed/test.atlas");
-        TextureRegionDrawable drawableUp = new TextureRegionDrawable( mAtlas.findRegion("rocket") );
-        TextureRegionDrawable drawableDown = new TextureRegionDrawable( mAtlas.findRegion("asteroid") );
-        TextureRegionDrawable drawableChecked = new TextureRegionDrawable( mAtlas.findRegion("platform") );
+        TextureAtlas mAtlas = new TextureAtlas("packed/restart/restart_button.atlas");
+        TextureRegionDrawable drawableUp = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
+        TextureRegionDrawable drawableDown = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
+        TextureRegionDrawable drawableChecked = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
         Button restart = new Button(btnStyle);
-        restart.setPosition(480,200);
-        Button respawn = new Button(btnStyle);
-        respawn.setPosition(70,60);
-
-        respawn.addListener(new ChangeListener() {
-            @Override
-            public void changed (ChangeEvent event, Actor actor) {
-
-                myWorld.respawn();
-                game.setScreen(new GameScreen(game));
-
-                System.out.println("Button respawn Pressed");
-            }
-        });
+        restart.setPosition(20,20);
 
         restart.addListener(new ChangeListener() {
             @Override
@@ -68,7 +59,7 @@ public class GameOverScreen implements Screen {
 
         stage = new Stage(new ScreenViewport());
         stage.addActor(restart);
-        stage.addActor(respawn);
+
         Gdx.input.setInputProcessor(stage);
     }
 

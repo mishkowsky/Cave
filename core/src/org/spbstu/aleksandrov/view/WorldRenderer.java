@@ -14,10 +14,10 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.Player;
+import org.spbstu.aleksandrov.model.entities.Asteroid;
 import org.spbstu.aleksandrov.model.entities.Entity;
 import org.spbstu.aleksandrov.model.entities.Rocket;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
@@ -32,6 +32,7 @@ public class WorldRenderer {
 
     private final List<? extends Entity> entities;
     private final List<Body> physicBodies;
+    private final List<Entity> entitiesForRemove;
 
     private static final float CAMERA_WIDTH = 45f;
     private static final float CAMERA_HEIGHT = 20f;
@@ -43,8 +44,12 @@ public class WorldRenderer {
     ShapeRenderer shapeRenderer;
 
     private Texture rocketTexture;
-    private Texture groundTexture;
-    private Texture asteroidTexture;
+    private Texture groundTexture_0;
+    private Texture groundTexture_1;
+    private Texture asteroidTexture_0;
+    private Texture asteroidTexture_1;
+    private Texture asteroidTexture_2;
+    private Texture asteroidTexture_3;
     private Texture coinTexture;
     private Texture bonusTexture;
     private Texture platformTexture;
@@ -59,17 +64,22 @@ public class WorldRenderer {
         this.rocket = myWorld.getRocket();
         this.rocketBody = physicBodies.get(0);
         this.player = myWorld.getPlayer();
+        this.entitiesForRemove = myWorld.getEntitiesForRemove();
 
         create();
     }
 
     private void loadTextures(){
-        groundTexture = new Texture(Gdx.files.internal("ground.png"));
-        rocketTexture = new Texture(Gdx.files.internal("rocket.png"));
-        //coinTexture = new Texture(Gdx.files.internal("coin.png"));
+        groundTexture_0 = new Texture(Gdx.files.internal("sprites/ground_0.png"));
+        groundTexture_1 = new Texture(Gdx.files.internal("sprites/ground_1.png"));
+        rocketTexture = new Texture(Gdx.files.internal("sprites/rocket.png"));
+        coinTexture = new Texture(Gdx.files.internal("sprites/coin.png"));
         //bonusTexture = new Texture(Gdx.files.internal("bonus.png"));
-        asteroidTexture = new Texture(Gdx.files.internal("asteroid.png"));
-        platformTexture = new Texture(Gdx.files.internal("platform.png"));
+        asteroidTexture_0 = new Texture(Gdx.files.internal("sprites/asteroid_0.png"));
+        asteroidTexture_1 = new Texture(Gdx.files.internal("sprites/asteroid_1.png"));
+        asteroidTexture_2 = new Texture(Gdx.files.internal("sprites/asteroid_2.png"));
+        asteroidTexture_3 = new Texture(Gdx.files.internal("sprites/asteroid_3.png"));
+        platformTexture = new Texture(Gdx.files.internal("sprites/platform.png"));
     }
 
     private void create() {
@@ -89,15 +99,6 @@ public class WorldRenderer {
         for (Entity entity : entities) {
             drawEntity(entity);
         }
-
-
-        for (Entity entity : removeEntities) {
-            int i = entities.indexOf(entity);
-            //myWorld.entities.remove(entity);
-            //myWorld.physicBodies.remove(i);
-        }
-
-        removeEntities.clear();
 
         drawUserData();
 
@@ -123,17 +124,16 @@ public class WorldRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
-    private final List<Entity> removeEntities = new ArrayList<>();
-
     private void drawEntity(Entity entity){
 
         Texture texture = getTexture(entity);
         int i = entities.indexOf(entity);
         Body body = physicBodies.get(i);
 
-        if (body == null || entity.getState() == Entity.State.POP) {
-            startAnimation(entity.getPosition());
-            if (!(entity instanceof Rocket)) removeEntities.add(entity);
+        if (entity.getState() == Entity.State.POP) {
+            //startAnimation(entity.getPosition());
+            startAnimation(body.getPosition());
+            if (!(entity instanceof Rocket)) entitiesForRemove.add(entity);
             else {
                 Gdx.app.log("Rocket DEAD", "please call next screen"); //TODO call death screen
             }
@@ -168,10 +168,20 @@ public class WorldRenderer {
     private Texture getTexture(Entity entity) {
         switch (entity.getClass().getSimpleName()) {
             case "Rocket" : return rocketTexture;
-            case "Ground" : return groundTexture;
+            case "Ground" :
+                switch(myWorld.getId()) {
+                    case 0 : return groundTexture_0;
+                    case 1 : return groundTexture_1;
+                }
             case "Platform" : return platformTexture;
             case "Coin" : return coinTexture;
-            case "Asteroid" : return asteroidTexture;
+            case "Asteroid" :
+                switch(((Asteroid) entity).getId()) {
+                    case 0 : return asteroidTexture_0;
+                    case 1 : return asteroidTexture_1;
+                    case 2 : return asteroidTexture_2;
+                    case 3 : return asteroidTexture_3;
+                }
 
         }
         return null;
@@ -188,9 +198,6 @@ public class WorldRenderer {
     private void drawFuelBar() {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         Vector3 position = camera.position;
-
-        //float cameraWidth = camera.viewportWidth;
-        //float cameraHeight = camera.viewportHeight;
 
         shapeRenderer.setColor(Color.valueOf("2B2B2B"));
         shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f, 0.25f);
@@ -236,10 +243,11 @@ public class WorldRenderer {
         font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
         font.setColor(0f, 0f, 0f, 1f);
 
-        String string = (int) position.x + "; " + (int) position.y +
-                System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
-                System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
-                System.getProperty("line.separator") + "High score: " + player.getHighScore() +
+        String string =
+                //(int) position.x + "; " + (int) position.y +
+                //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
+                //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
+                //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
                 System.getProperty("line.separator") + "State: " + rocket.getState() +
                 System.getProperty("line.separator") + "CurPlat: " + player.getCurrentPlatform().getId();
 

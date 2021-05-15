@@ -10,6 +10,7 @@ import org.spbstu.aleksandrov.view.Listener;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.Math.abs;
 import static org.spbstu.aleksandrov.model.entities.Entity.State.IDLE;
 import static org.spbstu.aleksandrov.model.entities.Entity.State.POP;
 
@@ -17,10 +18,13 @@ public class MyWorld {
 
     private final Player player;
     private final Rocket rocket;
+    private final int id;
     private Body rocketBody;
     private World world;
-    private final List<? extends Entity> entities;
+
+    private final List<Entity> entities = new ArrayList<>();
     private final List<Body> physicBodies = new ArrayList<>();
+    private final List<Entity> entitiesForRemove = new ArrayList<>();
     private boolean checkDistance = false;
 
     private PhysicsShapeCache physicsShapeCache;
@@ -44,7 +48,12 @@ public class MyWorld {
     private void createBodies() {
 
         for (Entity entity : entities) {
-            Body body = createBody(entity, entity.toString(), entity.getPosition());
+            Body body;
+            if (entity instanceof Asteroid)
+                body = createBody(entity, entity + "_" + ((Asteroid) entity).getId(), entity.getPosition()); else
+                    if (entity instanceof Ground)
+                        body = createBody(entity, entity + "_" + id, entity.getPosition()); else
+            body = createBody(entity, entity.toString(), entity.getPosition());
             physicBodies.add(body);
         }
 
@@ -72,12 +81,9 @@ public class MyWorld {
         awakeNearAsteroid();
         getCurrentPlatform();
         if (checkDistance) disableLastPlatform();
-        ((Rocket) entities.get(0)).setAngle();
+        rocket.setAngle();
+        rocket.updateFuel();
         if (rocketBody.getLinearVelocity().equals(new Vector2(0, 0))) rocket.setState(IDLE);
-    }
-
-    private void disableLastPlatform() {
-        //TODO
     }
 
     private void awakeNearAsteroid() {
@@ -89,7 +95,7 @@ public class MyWorld {
                     boolean isDynamic = ((Asteroid) asteroid).isDynamic();
 
                     Vector2 position = asteroidBody.getPosition();
-                    if (position.dst(rocketBody.getPosition()) < 20 && isDynamic) {
+                    if (position.dst(rocketBody.getPosition()) < 5 && isDynamic) {
                         if (position.y < rocketBody.getPosition().y) {
                             if (!(asteroidBody.getType() == BodyDef.BodyType.StaticBody)) {
                                 //TODO some shaking before falling?
@@ -103,6 +109,20 @@ public class MyWorld {
         }
     }
 
+    private void disableLastPlatform() {
+
+        Platform platform = player.getCurrentPlatform();
+        int index = entities.indexOf(platform);
+        Body body = physicBodies.get(index);
+
+        if (body.getPosition().dst(rocketBody.getPosition()) > 5) {
+            platform.setState(POP);
+            checkDistance = false;
+        }
+
+    }
+
+
     private void getCurrentPlatform () {
 
         Platform currentPlatform = player.getCurrentPlatform();
@@ -115,7 +135,8 @@ public class MyWorld {
 
         int index;
 
-        for (index = entities.indexOf(currentPlatform); index < entities.size(); index++) {
+        //TODO
+        for (index = 0/*entities.indexOf(currentPlatform)*/; index < entities.size(); index++) {
 
             if (entities.get(index) instanceof Platform) {
 
@@ -123,8 +144,6 @@ public class MyWorld {
 
                 if (!platform.getFuel() && platform.getId() > currentPlatform.getId())
                     player.setCurrentPlatform(platform);
-
-            //TODO
             } else break;
         }
     }
@@ -148,37 +167,44 @@ public class MyWorld {
 
         if (bodyA.getUserData() instanceof Rocket || bodyA.getUserData() instanceof Rocket) {
 
-            if (!(bodyA.getUserData() instanceof Rocket)) bodyB = bodyA;
+            if (!(bodyA.getUserData() instanceof Rocket)) {
+                Body s = bodyB;
+                bodyB = bodyA;
+                bodyA = s;
+            }
 
             int i = physicBodies.indexOf(bodyB);
-            switch (bodyB.getUserData().toString()) {
 
-                case ("platform") :
-                    if (bodyA.getPosition().y > bodyB.getPosition().y/* && speed check*/) {
+            switch (bodyB.getUserData().getClass().getSimpleName()) {
 
+                case "Platform" :
+                    if (bodyA.getPosition().y > bodyB.getPosition().y &&
+                        abs(bodyA.getLinearVelocity().y) < 10 &&
+                        abs(bodyA.getLinearVelocity().x) < 10
+                    ) {
                         if (rocket.getState() != IDLE) {
-                            //platforms.get(0).setState(Entity.State.POP);
 
                             Platform platform = (Platform) entities.get(i);
 
-                            player.addScore(100);
-                            if (platform.getFuel()) rocket.setFullFuel();
-                            platform.refuel();
+                            if (platform.getFuel()) {
+                                rocket.setRefueling();
+                                player.addScore(100);
+                                player.setCurrentPlatform(platform);
+                                platform.refuel();
+                            }
                         }
                     } else rocket.setState(Entity.State.POP);
                     break;
 
-                case ("asteroid") :
-                case ("ground") : rocket.setState(Rocket.State.POP);
+                case "Asteroid" :
+                case "Ground" : rocket.setState(Rocket.State.POP);
                      break;
-                case ("bonus") :
+                case "Bonus" :
                     entities.get(i).setState(Entity.State.POP);
-                    deleteBody(bodyB);
                     break;
 
-                case ("coin") :
+                case "Coin" :
                     entities.get(i).setState(Entity.State.POP);
-                    deleteBody(bodyB);
                     player.increaseBalance();
                     break;
             }
@@ -188,9 +214,6 @@ public class MyWorld {
             int i = physicBodies.indexOf(bodyB);
             Asteroid asteroid  = (Asteroid) entities.get(i);
             asteroid.setState(Entity.State.POP);
-            asteroid.setPosition(bodyB.getPosition());
-            if (bodyA.getUserData() instanceof Asteroid) deleteBody(bodyA);
-            else deleteBody(bodyB);
         }
     }
 
@@ -200,27 +223,16 @@ public class MyWorld {
 
         Gdx.app.log("endContact", "between " + bodyA.getUserData() + " and " + bodyB.getUserData());
 
-        //rocket.getState() != Rocket.State.IDLE && bodyB.getPosition().dst(rocketBody.getPosition()) > 10
-        checkDistance = true;
-
-        Entity platform;
-        if (bodyA.getUserData() instanceof Platform) platform = (Entity) bodyA.getUserData();
-        else platform = (Entity) bodyB.getUserData();
-
-        if (platform instanceof Platform) platform.setState(Entity.State.POP);
+        if (bodyA.getUserData() instanceof Platform || bodyB.getUserData() instanceof Platform) checkDistance = true;
     }
 
-    private void deleteBody(Body body) {
-        //It's more correct to store and destroy bodies right after the myWorld.stepWorld()
-        //in GameScreen but but for some reason this does not work.
-        Gdx.app.postRunnable(() -> world.destroyBody(body));
-    }
-
-    public MyWorld(Player player, List<? extends Entity> entities) {
+    public MyWorld(Player player, List<Entity> addEntities, int id) {
 
         this.player = player;
-        this.entities = entities;
+        entities.addAll(addEntities);
         this.rocket = (Rocket) entities.get(0);
+
+        this.id = id;
 
         create();
     }
@@ -245,4 +257,11 @@ public class MyWorld {
         return world;
     }
 
+    public List<Entity> getEntitiesForRemove() {
+        return entitiesForRemove;
+    }
+
+    public int getId() {
+        return id;
+    }
 }

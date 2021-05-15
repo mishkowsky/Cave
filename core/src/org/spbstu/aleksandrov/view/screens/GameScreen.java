@@ -2,6 +2,7 @@ package org.spbstu.aleksandrov.view.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
@@ -13,6 +14,7 @@ import org.spbstu.aleksandrov.view.WorldRenderer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.Input.Keys.LEFT;
@@ -20,28 +22,23 @@ import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
 
 public class GameScreen implements Screen {
 
-    /*private final MyWorld myWorld = new MyWorld(
-            new Player(),
-            new Rocket(new Vector2( (28.5f) * SCALE,(3700 + 15.5f) * SCALE)),
-            new Ground(new Vector2(0,0)),
-            List.of(new Platform(new Vector2(0,3700 * SCALE))),
-            List.of(new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true))
-    );*/
     private final MyWorld myWorld = new MyWorld(
             new Player(),
             List.of(
                 new Rocket(new Vector2( (28.5f) * SCALE,(3700 + 25f) * SCALE)),
                 new Ground(new Vector2(0,0)),
                 new Platform(new Vector2(0,3700 * SCALE)), new Platform(new Vector2(70 * SCALE, 2500 * SCALE)),
-                new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true)
-            )
+                new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true, 2)
+            ), 0
     );
 
     private final Game game;
     private final WorldRenderer renderer = new WorldRenderer(myWorld);
+    private final List<? extends Entity> entities;
 
     public GameScreen(Game game) {
         this.game = game;
+        this.entities = myWorld.getEntities();
     }
 
     @Override
@@ -55,11 +52,29 @@ public class GameScreen implements Screen {
         Gdx.gl.glClearColor(1f, 1f, 1f, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         myWorld.stepWorld();
+
         Rocket rocket = myWorld.getRocket();
         if (rocket.getState() == Entity.State.POP) game.setScreen(new GameOverScreen(game, myWorld));
+
+        List<Entity> entitiesForRemove = myWorld.getEntitiesForRemove();
+
+        for (Entity entity : entitiesForRemove) {
+
+                int i = entities.indexOf(entity);
+                Body body = myWorld.getPhysicBodies().get(i);
+                entities.remove(entity);
+
+                if (body != null) {
+                    Gdx.app.log("deleteBody", entity.toString());
+                    myWorld.getWorld().destroyBody(body);
+                }
+                myWorld.getPhysicBodies().remove(i);
+        }
+
+        entitiesForRemove.clear();
+
         processInput();
         renderer.render();
-
     }
 
     private void processInput() {

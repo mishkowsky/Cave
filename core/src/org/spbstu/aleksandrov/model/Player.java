@@ -1,17 +1,21 @@
 package org.spbstu.aleksandrov.model;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Preferences;
 import org.spbstu.aleksandrov.model.entities.Platform;
 
 public class Player {
 
-    private int highScore = 0;
-    private int balance = 0;
+    private int highScore;
+    private int balance;
     private int currentScore = 0;
     private Platform currentPlatform;
+    private Preferences prefs = Gdx.app.getPreferences("Cave_User_Data");
 
     public Player() {
 
-        //TODO load information from preference
+        highScore = prefs.getInteger("HighScore", 0);
+        balance = prefs.getInteger("Balance", 0);
 
     }
 
@@ -19,41 +23,27 @@ public class Player {
         currentScore += delta;
         if (currentScore > highScore) {
             highScore = currentScore;
-            updateData();
+            prefs.putInteger("HighScore", highScore);
+            prefs.flush();
         }
     }
 
     public void increaseBalance() {
         balance += 1;
-        updateData();
-    }
-
-    public void updateData() {
-       //TODO put information in preference
+        prefs.putInteger("Balance", balance);
+        prefs.flush();
     }
 
     public int getHighScore() {
         return highScore;
     }
 
-    public void setHighScore(int highScore) {
-        this.highScore = highScore;
-    }
-
     public int getBalance() {
         return balance;
     }
 
-    public void setBalance(int balance) {
-        this.balance = balance;
-    }
-
     public int getCurrentScore() {
         return currentScore;
-    }
-
-    public void setCurrentScore(int currentScore) {
-        this.currentScore = currentScore;
     }
 
     public Platform getCurrentPlatform() {
