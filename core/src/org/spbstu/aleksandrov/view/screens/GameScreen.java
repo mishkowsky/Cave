@@ -19,14 +19,13 @@ import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
 
 public class GameScreen implements Screen {
 
-
     private final MyWorld myWorld = new MyWorld(
             new Player(),
             List.of(
-                new Rocket(new Vector2( (28.5f) * SCALE,(3700 + 25f) * SCALE)),
-                new Ground(new Vector2(0,0)),
-                new Platform(new Vector2(0,3700 * SCALE)), new Platform(new Vector2(70 * SCALE, 2500 * SCALE)),
-                new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true, 2)
+                    new Rocket(new Vector2((28.5f) * SCALE, (3700 + 25f) * SCALE)),
+                    new Ground(new Vector2(0, 0)),
+                    new Platform(new Vector2(0, 3700 * SCALE)), new Platform(new Vector2(70 * SCALE, 2500 * SCALE)),
+                    new Asteroid(new Vector2(440 * SCALE, 3135 * SCALE), true, 2)
             ), 0
     );
 
@@ -59,15 +58,15 @@ public class GameScreen implements Screen {
 
         for (Entity entity : entitiesForRemove) {
 
-                int i = entities.indexOf(entity);
-                Body body = myWorld.getPhysicBodies().get(i);
-                entities.remove(entity);
+            int i = entities.indexOf(entity);
+            Body body = myWorld.getPhysicBodies().get(i);
+            entities.remove(entity);
 
-                if (body != null) {
-                    Gdx.app.log("deleteBody", entity.toString());
-                    myWorld.getWorld().destroyBody(body);
-                }
-                myWorld.getPhysicBodies().remove(i);
+            if (body != null) {
+                Gdx.app.log("deleteBody", entity.toString());
+                myWorld.getWorld().destroyBody(body);
+            }
+            myWorld.getPhysicBodies().remove(i);
         }
 
         entitiesForRemove.clear();
@@ -86,9 +85,9 @@ public class GameScreen implements Screen {
         boolean keyPressed = false;
         boolean up = (Gdx.input.isKeyPressed(W) || (Gdx.input.isKeyPressed(A) && Gdx.input.isKeyPressed(D))) ||
                 (Gdx.input.isKeyPressed(UP) || (Gdx.input.isKeyPressed(LEFT) && Gdx.input.isKeyPressed(RIGHT)));
-        boolean left = ((Gdx.input.isKeyPressed(A)) && !(Gdx.input.isKeyPressed(D)))||
+        boolean left = ((Gdx.input.isKeyPressed(A)) && !(Gdx.input.isKeyPressed(D))) ||
                 ((Gdx.input.isKeyPressed(LEFT)) && !(Gdx.input.isKeyPressed(RIGHT)));
-        boolean right = ((Gdx.input.isKeyPressed(D)) && !(Gdx.input.isKeyPressed(A)))||
+        boolean right = ((Gdx.input.isKeyPressed(D)) && !(Gdx.input.isKeyPressed(A))) ||
                 ((Gdx.input.isKeyPressed(RIGHT)) && !(Gdx.input.isKeyPressed(LEFT)));
 
         if (rocket.getFuel() > 0) {

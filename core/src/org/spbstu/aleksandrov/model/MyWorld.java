@@ -50,10 +50,11 @@ public class MyWorld {
         for (Entity entity : entities) {
             Body body;
             if (entity instanceof Asteroid)
-                body = createBody(entity, entity + "_" + ((Asteroid) entity).getId(), entity.getPosition()); else
-                    if (entity instanceof Ground)
-                        body = createBody(entity, entity + "_" + id, entity.getPosition()); else
-            body = createBody(entity, entity.toString(), entity.getPosition());
+                body = createBody(entity, entity + "_" + ((Asteroid) entity).getId(), entity.getPosition());
+            else if (entity instanceof Ground)
+                body = createBody(entity, entity + "_" + id, entity.getPosition());
+            else
+                body = createBody(entity, entity.toString(), entity.getPosition());
             physicBodies.add(body);
         }
 
@@ -90,20 +91,20 @@ public class MyWorld {
 
         for (Entity asteroid : entities) {
             if (asteroid instanceof Asteroid) {
-                    int i = entities.indexOf(asteroid);
-                    Body asteroidBody = physicBodies.get(i);
-                    boolean isDynamic = ((Asteroid) asteroid).isDynamic();
+                int i = entities.indexOf(asteroid);
+                Body asteroidBody = physicBodies.get(i);
+                boolean isDynamic = ((Asteroid) asteroid).isDynamic();
 
-                    Vector2 position = asteroidBody.getPosition();
-                    if (position.dst(rocketBody.getPosition()) < 5 && isDynamic) {
-                        if (position.y < rocketBody.getPosition().y) {
-                            if (!(asteroidBody.getType() == BodyDef.BodyType.StaticBody)) {
-                                //TODO some shaking before falling?
-                            }
-                        } else {
-                            asteroidBody.setType(BodyDef.BodyType.DynamicBody);
+                Vector2 position = asteroidBody.getPosition();
+                if (position.dst(rocketBody.getPosition()) < 5 && isDynamic) {
+                    if (position.y < rocketBody.getPosition().y) {
+                        if (!(asteroidBody.getType() == BodyDef.BodyType.StaticBody)) {
+                            //TODO some shaking before falling?
                         }
+                    } else {
+                        asteroidBody.setType(BodyDef.BodyType.DynamicBody);
                     }
+                }
 
             }
         }
@@ -123,7 +124,7 @@ public class MyWorld {
     }
 
 
-    private void getCurrentPlatform () {
+    private void getCurrentPlatform() {
 
         Platform currentPlatform = player.getCurrentPlatform();
 
@@ -177,10 +178,10 @@ public class MyWorld {
 
             switch (bodyB.getUserData().getClass().getSimpleName()) {
 
-                case "Platform" :
+                case "Platform":
                     if (bodyA.getPosition().y > bodyB.getPosition().y &&
-                        abs(bodyA.getLinearVelocity().y) < 10 &&
-                        abs(bodyA.getLinearVelocity().x) < 10
+                            abs(bodyA.getLinearVelocity().y) < 10 &&
+                            abs(bodyA.getLinearVelocity().x) < 10
                     ) {
                         if (rocket.getState() != IDLE) {
 
@@ -196,30 +197,30 @@ public class MyWorld {
                     } else rocket.setState(Entity.State.POP);
                     break;
 
-                case "Asteroid" :
-                case "Ground" : rocket.setState(Rocket.State.POP);
-                     break;
-                case "Bonus" :
+                case "Asteroid":
+                case "Ground":
+                    rocket.setState(Rocket.State.POP);
+                    break;
+                case "Bonus":
                     entities.get(i).setState(Entity.State.POP);
                     break;
 
-                case "Coin" :
+                case "Coin":
                     entities.get(i).setState(Entity.State.POP);
                     player.increaseBalance();
                     break;
             }
-        }
-        else if (bodyA.getUserData() instanceof Asteroid || bodyB.getUserData() instanceof Asteroid) {
+        } else if (bodyA.getUserData() instanceof Asteroid || bodyB.getUserData() instanceof Asteroid) {
             if (bodyA.getUserData() instanceof Asteroid) bodyB = bodyA;
             int i = physicBodies.indexOf(bodyB);
-            Asteroid asteroid  = (Asteroid) entities.get(i);
+            Asteroid asteroid = (Asteroid) entities.get(i);
             asteroid.setState(Entity.State.POP);
         }
     }
 
     public void endContactProcess(Contact contact) {
         Body bodyA = contact.getFixtureA().getBody();
-        Body bodyB =  contact.getFixtureB().getBody();
+        Body bodyB = contact.getFixtureB().getBody();
 
         Gdx.app.log("endContact", "between " + bodyA.getUserData() + " and " + bodyB.getUserData());
 

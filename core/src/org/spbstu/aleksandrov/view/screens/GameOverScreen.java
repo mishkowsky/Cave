@@ -38,18 +38,18 @@ public class GameOverScreen implements Screen {
     private void create() {
 
         TextureAtlas mAtlas = new TextureAtlas("packed/restart/restart_button.atlas");
-        TextureRegionDrawable drawableUp = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
-        TextureRegionDrawable drawableDown = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
-        TextureRegionDrawable drawableChecked = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
+        TextureRegionDrawable drawableUp = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
+        TextureRegionDrawable drawableDown = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
+        TextureRegionDrawable drawableChecked = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
 
         Button restart = new Button(btnStyle);
-        restart.setPosition(20,20);
+        restart.setPosition(20, 20);
 
         restart.addListener(new ChangeListener() {
             @Override
-            public void changed (ChangeEvent event, Actor actor) {
+            public void changed(ChangeEvent event, Actor actor) {
 
                 game.setScreen(new GameScreen(game));
 

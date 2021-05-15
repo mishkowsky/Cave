@@ -34,7 +34,7 @@ public class WorldRenderer {
 
     private static final float CAMERA_WIDTH = 45f;
     private static final float CAMERA_HEIGHT = 20f;
-    private final double DEGREES_TO_RADIANS = (Math.PI/180);
+    private final double DEGREES_TO_RADIANS = (Math.PI / 180);
 
     private SpriteBatch batch;
     private OrthographicCamera camera;
@@ -69,7 +69,7 @@ public class WorldRenderer {
         create();
     }
 
-    private void loadTextures(){
+    private void loadTextures() {
         groundTexture_0 = new Texture(Gdx.files.internal("sprites/ground_0.png"));
         groundTexture_1 = new Texture(Gdx.files.internal("sprites/ground_1.png"));
         rocketTexture = new Texture(Gdx.files.internal("sprites/rocket.png"));
@@ -125,8 +125,8 @@ public class WorldRenderer {
         Vector2 position = rocketBody.getPosition();
 
         camera.position.set(
-                position.x - rocketBody.getLinearVelocity().x * 0.1f ,
-                position.y  - rocketBody.getLinearVelocity().y * 0.1f,
+                position.x - rocketBody.getLinearVelocity().x * 0.1f,
+                position.y - rocketBody.getLinearVelocity().y * 0.1f,
                 0);
 
         camera.update();
@@ -134,7 +134,7 @@ public class WorldRenderer {
         shapeRenderer.setProjectionMatrix(camera.combined);
     }
 
-    private void drawEntity(Entity entity){
+    private void drawEntity(Entity entity) {
 
         Texture texture = getTexture(entity);
 
@@ -166,11 +166,10 @@ public class WorldRenderer {
                 sprite.setPosition(
                         position.x - sprite.getWidth() / 2,
                         position.y - sprite.getHeight() / 2);
-            }
-            else
+            } else
                 sprite.setPosition(
-                    position.x - sprite.getWidth() / 2 + sprite.getWidth() / 2 * SCALE,
-                    position.y - sprite.getHeight() / 2 + sprite.getHeight() / 2 * SCALE);
+                        position.x - sprite.getWidth() / 2 + sprite.getWidth() / 2 * SCALE,
+                        position.y - sprite.getHeight() / 2 + sprite.getHeight() / 2 * SCALE);
 
             sprite.setScale(SCALE);
             sprite.draw(batch);
@@ -180,20 +179,29 @@ public class WorldRenderer {
 
     private Texture getTexture(Entity entity) {
         switch (entity.getClass().getSimpleName()) {
-            case "Rocket" : return rocketTexture;
-            case "Ground" :
-                switch(myWorld.getId()) {
-                    case 0 : return groundTexture_0;
-                    case 1 : return groundTexture_1;
+            case "Rocket":
+                return rocketTexture;
+            case "Ground":
+                switch (myWorld.getId()) {
+                    case 0:
+                        return groundTexture_0;
+                    case 1:
+                        return groundTexture_1;
                 }
-            case "Platform" : return platformTexture;
-            case "Coin" : return coinTexture;
-            case "Asteroid" :
-                switch(((Asteroid) entity).getId()) {
-                    case 0 : return asteroidTexture_0;
-                    case 1 : return asteroidTexture_1;
-                    case 2 : return asteroidTexture_2;
-                    case 3 : return asteroidTexture_3;
+            case "Platform":
+                return platformTexture;
+            case "Coin":
+                return coinTexture;
+            case "Asteroid":
+                switch (((Asteroid) entity).getId()) {
+                    case 0:
+                        return asteroidTexture_0;
+                    case 1:
+                        return asteroidTexture_1;
+                    case 2:
+                        return asteroidTexture_2;
+                    case 3:
+                        return asteroidTexture_3;
                 }
 
         }
@@ -207,8 +215,9 @@ public class WorldRenderer {
     private void drawPlatformId(Platform platform) {
         Vector2 position = platform.getPosition();
         String string;
-        if (platform.getId() == 0) string = "Start"; else string = "" + platform.getId();
-        font.setColor(1f,1f,1f,1f);
+        if (platform.getId() == 0) string = "Start";
+        else string = "" + platform.getId();
+        font.setColor(1f, 1f, 1f, 1f);
         font.getData().setScale(0.01f);
 
         layout.setText(font, string);
@@ -241,10 +250,12 @@ public class WorldRenderer {
         String red;
         String green;
 
-        if (fuel >= 70) red = Integer.toHexString(7 * i * (100 - fuel) / 210); else red = Integer.toHexString(i);
+        if (fuel >= 70) red = Integer.toHexString(7 * i * (100 - fuel) / 210);
+        else red = Integer.toHexString(i);
         if (red.length() == 1) red = "0" + red;
 
-        if (fuel < 70) green = Integer.toHexString(i * fuel / 70); else green = Integer.toHexString(i);
+        if (fuel < 70) green = Integer.toHexString(i * fuel / 70);
+        else green = Integer.toHexString(i);
         if (green.length() == 1) green = "0" + green;
 
         return red + green + "00";
@@ -257,14 +268,14 @@ public class WorldRenderer {
     private void drawText(Vector3 position) {
 
         font.getData().setScale(0.025f);
-        font.setColor(0f,0f,0f,1f);
+        font.setColor(0f, 0f, 0f, 1f);
         String string =
                 //(int) position.x + "; " + (int) position.y +
                 //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
                 //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
                 //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
                 System.getProperty("line.separator") + "State: " + rocket.getState() +
-                System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
+                        System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
 
         font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
     }

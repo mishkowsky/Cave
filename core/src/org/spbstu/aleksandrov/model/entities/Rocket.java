@@ -27,16 +27,17 @@ public class Rocket extends Entity {
 
     public void setAngle() {
         switch (state) {
-            case FLYING_UP :
-            case IDLE :
+            case FLYING_UP:
+            case IDLE:
                 if (angle != 0) {
-                    if (angle > 0) angle -= 1f; else angle += 1f;
+                    if (angle > 0) angle -= 1f;
+                    else angle += 1f;
                 }
                 break;
-            case FLYING_RIGHT :
+            case FLYING_RIGHT:
                 if (angle != -15) angle -= 1f;
                 break;
-            case FLYING_LEFT :
+            case FLYING_LEFT:
                 if (angle != 15) angle += 1f;
                 break;
         }
