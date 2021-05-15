@@ -2,7 +2,6 @@ package org.spbstu.aleksandrov.view.screens;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Preferences;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.math.Vector2;
@@ -12,15 +11,14 @@ import org.spbstu.aleksandrov.model.Player;
 import org.spbstu.aleksandrov.model.entities.*;
 import org.spbstu.aleksandrov.view.WorldRenderer;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.Input.Keys.LEFT;
 import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
 
 public class GameScreen implements Screen {
+
 
     private final MyWorld myWorld = new MyWorld(
             new Player(),
@@ -37,6 +35,7 @@ public class GameScreen implements Screen {
     private final List<? extends Entity> entities;
 
     public GameScreen(Game game) {
+        Platform.resetIdCounter();
         this.game = game;
         this.entities = myWorld.getEntities();
     }

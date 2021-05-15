@@ -4,10 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.Sprite;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g2d.*;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
@@ -16,6 +13,7 @@ import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.Player;
 import org.spbstu.aleksandrov.model.entities.Asteroid;
 import org.spbstu.aleksandrov.model.entities.Entity;
+import org.spbstu.aleksandrov.model.entities.Platform;
 import org.spbstu.aleksandrov.model.entities.Rocket;
 
 import java.util.List;
@@ -38,10 +36,12 @@ public class WorldRenderer {
     private static final float CAMERA_HEIGHT = 20f;
     private final double DEGREES_TO_RADIANS = (Math.PI/180);
 
-    SpriteBatch batch;
-    OrthographicCamera camera;
-    Box2DDebugRenderer debugRenderer;
-    ShapeRenderer shapeRenderer;
+    private SpriteBatch batch;
+    private OrthographicCamera camera;
+    private Box2DDebugRenderer debugRenderer;
+    private ShapeRenderer shapeRenderer;
+    private BitmapFont font;
+    private GlyphLayout layout;
 
     private Texture rocketTexture;
     private Texture groundTexture_0;
@@ -83,9 +83,18 @@ public class WorldRenderer {
     }
 
     private void create() {
-        batch = new SpriteBatch(1000);
+        batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
         camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+
+        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
+        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
+        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font.setUseIntegerPositions(false);
+
+        layout = new GlyphLayout();
+
         loadTextures();
         debugRenderer = new Box2DDebugRenderer();
     }
@@ -98,11 +107,12 @@ public class WorldRenderer {
 
         for (Entity entity : entities) {
             drawEntity(entity);
+            if (entity instanceof Platform) drawPlatformId((Platform) entity);
         }
 
         drawUserData();
 
-        drawFont(camera.position);
+        drawText(camera.position);
 
         batch.end();
 
@@ -127,8 +137,11 @@ public class WorldRenderer {
     private void drawEntity(Entity entity){
 
         Texture texture = getTexture(entity);
-        int i = entities.indexOf(entity);
-        Body body = physicBodies.get(i);
+
+        Body body = getBody(entity);
+
+        //int i = entities.indexOf(entity);
+        //Body body = physicBodies.get(i);
 
         if (entity.getState() == Entity.State.POP) {
             //startAnimation(entity.getPosition());
@@ -191,8 +204,19 @@ public class WorldRenderer {
         //TODO burst animation
     }
 
-    private void drawPlatformId() {
-        //TODO
+    private void drawPlatformId(Platform platform) {
+        Vector2 position = platform.getPosition();
+        String string;
+        if (platform.getId() == 0) string = "Start"; else string = "" + platform.getId();
+        font.setColor(1f,1f,1f,1f);
+        font.getData().setScale(0.01f);
+
+        layout.setText(font, string);
+        float height = layout.height;
+        float width = layout.width;
+
+        font.draw(batch, string, position.x + platformTexture.getWidth() * SCALE / 2f - width / 2f,
+                position.y + platformTexture.getHeight() * SCALE / 2f + height / 2f);
     }
 
     private void drawFuelBar() {
@@ -200,12 +224,12 @@ public class WorldRenderer {
         Vector3 position = camera.position;
 
         shapeRenderer.setColor(Color.valueOf("2B2B2B"));
-        shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f, 0.25f);
+        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f, position.y + CAMERA_HEIGHT * 0.45f, 5f, 0.25f);
 
         String leftColor = countColor((int) rocket.getFuel(), 90);
         String rightColor = countColor((int) rocket.getFuel(), 255);
 
-        shapeRenderer.rect(position.x + 16f, position.y + 9f, 5f * rocket.getFuel() / 100, 0.25f,
+        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f, position.y + CAMERA_HEIGHT * 0.45f, 5f * rocket.getFuel() / 100, 0.25f,
                 new Color(Color.valueOf(leftColor)), new Color(Color.valueOf(rightColor)),
                 new Color(Color.valueOf(rightColor)), new Color(Color.valueOf(leftColor)));
 
@@ -230,27 +254,23 @@ public class WorldRenderer {
         //TODO
     }
 
-    //for debug, raw version, doesn't work properly
-    private void drawFont(Vector3 position) {
-        BitmapFont font;
+    private void drawText(Vector3 position) {
 
-        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
-        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-
-        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
-
-        font.getData().setScale(0.05f);
-        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font.setColor(0f, 0f, 0f, 1f);
-
+        font.getData().setScale(0.025f);
+        font.setColor(0f,0f,0f,1f);
         String string =
                 //(int) position.x + "; " + (int) position.y +
                 //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
                 //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
                 //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
                 System.getProperty("line.separator") + "State: " + rocket.getState() +
-                System.getProperty("line.separator") + "CurPlat: " + player.getCurrentPlatform().getId();
+                System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
 
-        font.draw(batch, string, position.x - 50  * SCALE, position.y + 200 * SCALE);
+        font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
+    }
+
+    private Body getBody(Entity entity) {
+        int i = entities.indexOf(entity);
+        return physicBodies.get(i);
     }
 }

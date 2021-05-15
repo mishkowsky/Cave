@@ -43,6 +43,7 @@ public class GameOverScreen implements Screen {
         TextureRegionDrawable drawableChecked = new TextureRegionDrawable( mAtlas.findRegion("restart_button") );
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
+
         Button restart = new Button(btnStyle);
         restart.setPosition(20,20);
 
@@ -50,7 +51,6 @@ public class GameOverScreen implements Screen {
             @Override
             public void changed (ChangeEvent event, Actor actor) {
 
-                myWorld.respawn();
                 game.setScreen(new GameScreen(game));
 
                 System.out.println("Button restart Pressed");

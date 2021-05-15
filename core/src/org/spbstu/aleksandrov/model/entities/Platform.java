@@ -5,7 +5,7 @@ import com.badlogic.gdx.math.Vector2;
 public class Platform extends Entity {
 
     private final int id;
-    private static int i = 0; //TODO reset when game restarts
+    private static int i = 0;
     private boolean fuel = true;
 
     public void refuel() {
@@ -24,6 +24,10 @@ public class Platform extends Entity {
         super(position);
         this.id = i;
         i++;
+    }
+
+    public static void resetIdCounter() {
+        i = 0;
     }
 
     @Override
