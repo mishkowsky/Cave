@@ -4,29 +4,26 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
+import org.spbstu.aleksandrov.model.entities.Platform;
 import org.spbstu.aleksandrov.view.WorldRenderer;
 
 
 public class GameOverScreen implements Screen {
 
-    private Game game;
-    private MyWorld myWorld;
+    private final Game game;
+    private final MyWorld myWorld;
     private final WorldRenderer renderer;
-    private Stage stage;
-    private Screen lastScreen;
+    private final Stage stage;
+    private final Screen lastScreen;
 
     public GameOverScreen(Game game, MyWorld myWorld, Screen lastScreen) {
 
@@ -34,13 +31,12 @@ public class GameOverScreen implements Screen {
         this.myWorld = myWorld;
         this.renderer = new WorldRenderer(myWorld);
         this.lastScreen = lastScreen;
+        this.stage = new Stage(new ScreenViewport());
         create();
 
     }
 
     private void create() {
-
-        stage = new Stage(new ScreenViewport());
 
         float height = stage.getHeight();
         float width = stage.getWidth();
@@ -74,6 +70,9 @@ public class GameOverScreen implements Screen {
             }
         });
 
+
+        int i = myWorld.getCurrentPlatformIndex();
+        if (i >= myWorld.getEntities().size() || !(myWorld.getEntities().get(i + 1) instanceof Platform)) respawn.setDisabled(true);
 
         stage.addActor(restart);
         stage.addActor(respawn);
@@ -128,11 +127,11 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void hide() {
-
+        stage.dispose();
     }
 
     @Override
     public void dispose() {
-
+        stage.dispose();
     }
 }

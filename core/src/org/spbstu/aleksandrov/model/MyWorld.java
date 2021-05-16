@@ -71,6 +71,9 @@ public class MyWorld {
     }
 
     public void stepWorld() {
+
+        if (rocketBody.getLinearVelocity().equals(new Vector2(0, 0))) rocket.setState(IDLE);
+
         float delta = Gdx.graphics.getDeltaTime();
 
         accumulator += Math.min(delta, 0.25f);
@@ -84,7 +87,7 @@ public class MyWorld {
         if (checkDistance) disableLastPlatform();
         rocket.setAngle();
         rocket.updateFuel();
-        if (rocketBody.getLinearVelocity().equals(new Vector2(0, 0))) rocket.setState(IDLE);
+
     }
 
     private void awakeNearAsteroid() {
@@ -116,8 +119,10 @@ public class MyWorld {
         int index = entities.indexOf(platform);
         Body body = physicBodies.get(index);
 
+        //Gdx.app.log("nextentity", String.valueOf(entities.get(index + 1)));
+
         if (body.getPosition().dst(rocketBody.getPosition()) > 5 &&
-                entities.get(index + 1) instanceof Platform) {
+                index + 1 < entities.size() && entities.get(index + 1) instanceof Platform) {
             platform.setState(POP);
             checkDistance = false;
         }
@@ -130,7 +135,7 @@ public class MyWorld {
 
         Vector2 position;
 
-        Gdx.app.log("bool", String.valueOf(entities.contains(player.getCurrentPlatform())));
+        Gdx.app.log("boolean", String.valueOf(entities.contains(player.getCurrentPlatform())));
 
         if (entities.contains(player.getCurrentPlatform())) {
             position = entities.get(currentPlatformIndex + 1).getPosition();
@@ -173,11 +178,12 @@ public class MyWorld {
 
                             if (platform.getFuel()) {
                                 rocket.setRefueling();
-                                player.addScore(100);
+                                if (platform.getId() > 0) player.addScore(100);
                                 player.setCurrentPlatform(platform);
                                 currentPlatformIndex = entities.indexOf(platform);
                                 platform.refuel();
                             }
+                            if (i + 1 >= entities.size() || !(entities.get(i + 1) instanceof Platform)) rocket.setState(POP);
                     } else rocket.setState(Entity.State.POP);
                     break;
 
@@ -251,5 +257,9 @@ public class MyWorld {
 
     public int getId() {
         return id;
+    }
+
+    public int getCurrentPlatformIndex() {
+        return currentPlatformIndex;
     }
 }
