@@ -1,0 +1,13 @@
+
+respawn_button.png
+size: 256, 256
+format: RGBA8888
+filter: Nearest, Nearest
+repeat: none
+respawn_button
+  rotate: false
+  xy: 2, 2
+  size: 180, 180
+  orig: 180, 180
+  offset: 0, 0
+  index: -1

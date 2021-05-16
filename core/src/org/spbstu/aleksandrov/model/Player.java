@@ -10,7 +10,7 @@ public class Player {
     private int balance;
     private int currentScore = 0;
     private Platform currentPlatform;
-    private Preferences prefs = Gdx.app.getPreferences("Cave_User_Data");
+    private final Preferences prefs = Gdx.app.getPreferences("Cave_User_Data");
 
     public Player() {
 

@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.SpriteDrawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.view.WorldRenderer;
@@ -25,27 +26,28 @@ public class GameOverScreen implements Screen {
     private MyWorld myWorld;
     private final WorldRenderer renderer;
     private Stage stage;
+    private Screen lastScreen;
 
-    public GameOverScreen(Game game, MyWorld myWorld) {
+    public GameOverScreen(Game game, MyWorld myWorld, Screen lastScreen) {
 
         this.game = game;
         this.myWorld = myWorld;
         this.renderer = new WorldRenderer(myWorld);
+        this.lastScreen = lastScreen;
         create();
 
     }
 
     private void create() {
 
-        TextureAtlas mAtlas = new TextureAtlas("packed/restart/restart_button.atlas");
-        TextureRegionDrawable drawableUp = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
-        TextureRegionDrawable drawableDown = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
-        TextureRegionDrawable drawableChecked = new TextureRegionDrawable(mAtlas.findRegion("restart_button"));
+        stage = new Stage(new ScreenViewport());
 
-        Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
+        float height = stage.getHeight();
+        float width = stage.getWidth();
 
-        Button restart = new Button(btnStyle);
-        restart.setPosition(20, 20);
+        Button restart = createButton("restart");
+        restart.setOrigin(Align.center);
+        restart.setPosition(width / 2f + 100f, height / 2f);
 
         restart.addListener(new ChangeListener() {
             @Override
@@ -54,14 +56,43 @@ public class GameOverScreen implements Screen {
                 game.setScreen(new GameScreen(game));
 
                 System.out.println("Button restart Pressed");
+        }
+        });
+
+        Button respawn = createButton("respawn");
+        respawn.setOrigin(Align.center);
+        respawn.setPosition(width / 2f - 100f, height / 2f);
+
+        respawn.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+
+                myWorld.respawn();
+                game.setScreen(lastScreen);
+
+                System.out.println("Button respawn Pressed");
             }
         });
 
-        stage = new Stage(new ScreenViewport());
+
         stage.addActor(restart);
+        stage.addActor(respawn);
 
         Gdx.input.setInputProcessor(stage);
     }
+
+    private Button createButton(String name) {
+        TextureAtlas mAtlas = new TextureAtlas("packed/" + name + "/" + name + "_button.atlas");
+        TextureRegionDrawable drawableUp = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_up"*/));
+        TextureRegionDrawable drawableDown = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_down"*/));
+        TextureRegionDrawable drawableChecked = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_checked"*/));
+
+        Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
+
+        return new Button(btnStyle);
+    }
+
+
 
     @Override
     public void show() {

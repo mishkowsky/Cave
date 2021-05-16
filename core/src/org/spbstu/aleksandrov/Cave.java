@@ -6,18 +6,18 @@ import org.spbstu.aleksandrov.view.screens.GameScreen;
 
 public class Cave extends Game {
 
-    private final Game game;
+	private final Game game;
 
-    public Cave() {
-        game = this;
-    }
+	public Cave() {
+		game = this;
+	}
 
-    @Override
-    public void create() {
-        setScreen(new GameScreen(game));
-    }
+	@Override
+	public void create () {
+		setScreen(new GameScreen(game));
+	}
 
-    public void render() {
-        super.render();
-    }
+	public void render() {
+		super.render();
+	}
 }

@@ -26,6 +26,7 @@ public class MyWorld {
     private final List<Body> physicBodies = new ArrayList<>();
     private final List<Entity> entitiesForRemove = new ArrayList<>();
     private boolean checkDistance = false;
+    private int currentPlatformIndex;
 
     private PhysicsShapeCache physicsShapeCache;
 
@@ -80,7 +81,6 @@ public class MyWorld {
         }
 
         awakeNearAsteroid();
-        getCurrentPlatform();
         if (checkDistance) disableLastPlatform();
         rocket.setAngle();
         rocket.updateFuel();
@@ -116,47 +116,32 @@ public class MyWorld {
         int index = entities.indexOf(platform);
         Body body = physicBodies.get(index);
 
-        if (body.getPosition().dst(rocketBody.getPosition()) > 5) {
+        if (body.getPosition().dst(rocketBody.getPosition()) > 5 &&
+                entities.get(index + 1) instanceof Platform) {
             platform.setState(POP);
             checkDistance = false;
         }
 
     }
 
-
-    private void getCurrentPlatform() {
-
-        Platform currentPlatform = player.getCurrentPlatform();
-
-        //TODO get first platform in entities
-        if (currentPlatform == null) {
-            player.setCurrentPlatform((Platform) entities.get(2));
-            currentPlatform = player.getCurrentPlatform();
-        }
-
-        int index;
-
-        //TODO
-        for (index = 0/*entities.indexOf(currentPlatform)*/; index < entities.size(); index++) {
-
-            if (entities.get(index) instanceof Platform) {
-
-                Platform platform = (Platform) entities.get(index);
-
-                if (!platform.getFuel() && platform.getId() > currentPlatform.getId())
-                    player.setCurrentPlatform(platform);
-            } else break;
-        }
-    }
-
     public void respawn() {
 
         //TODO return rocketBody on platform with index current + 1
 
-        rocket.setState(IDLE);
-        //Vector2 position = platformBody.getPosition();
-        //rocketBody.setTransform(position, 0);
+        Vector2 position;
 
+        Gdx.app.log("bool", String.valueOf(entities.contains(player.getCurrentPlatform())));
+
+        if (entities.contains(player.getCurrentPlatform())) {
+            position = entities.get(currentPlatformIndex + 1).getPosition();
+        } else {
+            position = entities.get(currentPlatformIndex).getPosition();
+        }
+
+        rocket.setState(IDLE);
+        rocket.setAngle(0);
+
+        rocketBody.setTransform(position.x + 28.5f * SCALE, position.y + 25f * SCALE, 0);
     }
 
     public void contactProcess(Contact contact) {
@@ -179,21 +164,20 @@ public class MyWorld {
             switch (bodyB.getUserData().getClass().getSimpleName()) {
 
                 case "Platform":
-                    if (bodyA.getPosition().y > bodyB.getPosition().y &&
+
+                    if (bodyA.getPosition().y >= bodyB.getPosition().y + 10f * SCALE &&
                             abs(bodyA.getLinearVelocity().y) < 10 &&
                             abs(bodyA.getLinearVelocity().x) < 10
                     ) {
-                        if (rocket.getState() != IDLE) {
-
                             Platform platform = (Platform) entities.get(i);
 
                             if (platform.getFuel()) {
                                 rocket.setRefueling();
                                 player.addScore(100);
                                 player.setCurrentPlatform(platform);
+                                currentPlatformIndex = entities.indexOf(platform);
                                 platform.refuel();
                             }
-                        }
                     } else rocket.setState(Entity.State.POP);
                     break;
 
@@ -224,10 +208,13 @@ public class MyWorld {
 
         Gdx.app.log("endContact", "between " + bodyA.getUserData() + " and " + bodyB.getUserData());
 
-        if (bodyA.getUserData() instanceof Platform || bodyB.getUserData() instanceof Platform) checkDistance = true;
+        if (bodyA.getUserData() instanceof Platform && bodyB.getUserData() instanceof Rocket ||
+                bodyA.getUserData() instanceof Rocket && bodyB.getUserData() instanceof Platform ) checkDistance = true;
     }
 
     public MyWorld(Player player, List<Entity> addEntities, int id) {
+
+        Platform.resetIdCounter();
 
         this.player = player;
         entities.addAll(addEntities);

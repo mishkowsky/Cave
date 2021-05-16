@@ -104,19 +104,22 @@ public class WorldRenderer {
         moveCamera();
 
         batch.begin();
-
         for (Entity entity : entities) {
             drawEntity(entity);
             if (entity instanceof Platform) drawPlatformId((Platform) entity);
         }
-
-        drawUserData();
-
-        drawText(camera.position);
-
         batch.end();
 
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         drawFuelBar();
+        drawBalanceBox();
+        shapeRenderer.end();
+
+        batch.begin();
+        drawUserData();
+        drawText(camera.position);
+        batch.end();
+
 
         debugRenderer.render(myWorld.getWorld(), camera.combined);
     }
@@ -140,6 +143,7 @@ public class WorldRenderer {
 
         Body body = getBody(entity);
 
+        //TODO
         //int i = entities.indexOf(entity);
         //Body body = physicBodies.get(i);
 
@@ -148,20 +152,16 @@ public class WorldRenderer {
             startAnimation(body.getPosition());
             if (!(entity instanceof Rocket)) entitiesForRemove.add(entity);
             else {
-                Gdx.app.log("Rocket DEAD", "please call next screen"); //TODO call death screen
+                Gdx.app.log("Rocket DEAD", "please call next screen");
             }
         } else {
             Sprite sprite = new Sprite(texture);
             Vector2 position = body.getPosition();
-            //sprite.setOriginCenter();
 
             if (entity instanceof Rocket) {
                 body.setTransform(body.getPosition().x, body.getPosition().y,
                         rocket.getAngle() * (float) DEGREES_TO_RADIANS);
                 sprite.setRotation(rocket.getAngle());
-            }
-
-            if (entity instanceof Rocket) {
                 sprite.setOriginCenter();
                 sprite.setPosition(
                         position.x - sprite.getWidth() / 2,
@@ -229,20 +229,20 @@ public class WorldRenderer {
     }
 
     private void drawFuelBar() {
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
         Vector3 position = camera.position;
 
         shapeRenderer.setColor(Color.valueOf("2B2B2B"));
-        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f, position.y + CAMERA_HEIGHT * 0.45f, 5f, 0.25f);
+        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f,
+                position.y + CAMERA_HEIGHT * 0.45f, 5f, 0.25f);
 
         String leftColor = countColor((int) rocket.getFuel(), 90);
         String rightColor = countColor((int) rocket.getFuel(), 255);
 
-        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f, position.y + CAMERA_HEIGHT * 0.45f, 5f * rocket.getFuel() / 100, 0.25f,
+        shapeRenderer.rect(position.x + CAMERA_WIDTH * 0.35f,
+                position.y + CAMERA_HEIGHT * 0.45f, 5f * rocket.getFuel() / 100, 0.25f,
                 new Color(Color.valueOf(leftColor)), new Color(Color.valueOf(rightColor)),
                 new Color(Color.valueOf(rightColor)), new Color(Color.valueOf(leftColor)));
-
-        shapeRenderer.end();
     }
 
     private String countColor(int fuel, int i) {
@@ -262,22 +262,79 @@ public class WorldRenderer {
     }
 
     private void drawUserData() {
-        //TODO
+
+        Vector3 position = camera.position;
+        final float cam_h = camera.viewportHeight;
+        final float cam_w = camera.viewportWidth;
+        float height;
+        float width;
+
+        font.setColor(0f, 0f, 0f, 1f);
+        font.getData().setScale(0.025f);
+        String currentScore = String.valueOf(player.getCurrentScore());
+        layout.setText(font, currentScore);
+        width = layout.width;
+
+        font.draw(batch, currentScore, camera.position.x - width / 2f,
+                camera.position.y + camera.viewportHeight / 2);
+
+        font.getData().setScale(0.015f);
+        String highScore = String.valueOf(player.getHighScore());
+        layout.setText(font, highScore);
+        width = layout.width;
+
+        font.draw(batch, highScore, camera.position.x - width / 2f,
+                camera.position.y + camera.viewportHeight / 2 - 25f * SCALE);
+
+        font.getData().setScale(0.015f);
+        String balance = String.valueOf(player.getBalance());
+        layout.setText(font, balance);
+        height = layout.height;
+        width = layout.width;
+        font.draw(batch, balance, position.x + cam_w * 0.425f - width / 2,
+                position.y - cam_h * 0.45f + height / 2);
+
+        Sprite coin = new Sprite(coinTexture);
+
+        coin.setPosition(position.x + cam_w * 0.4f - coin.getWidth() / 2,
+                position.y - cam_h * 0.45f - coin.getHeight() / 2);
+        coin.setScale(SCALE * 0.5f);
+        coin.draw(batch);
+    }
+
+    private void drawBalanceBox() {
+
+        Vector3 position = camera.position;
+        final float cam_h = camera.viewportHeight;
+        final float cam_w = camera.viewportWidth;
+        final float rect_h = 15f * SCALE;
+        final float rect_w = 50f * SCALE;
+
+        shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.setColor(1f, 1f, 1f, 1f);
+        shapeRenderer.rect(position.x + cam_w * 0.425f - rect_w / 2, position.y - cam_h * 0.45f - rect_h / 2,
+                rect_w, rect_h);
+        shapeRenderer.arc(position.x + cam_w * 0.425f - rect_w / 2, position.y - cam_h * 0.45f,
+                rect_h / 2, 90f, 180, 180);
+        shapeRenderer.arc(position.x + cam_w * 0.425f + rect_w / 2, position.y - cam_h * 0.45f,
+                rect_h / 2, -90f, 180, 180);
     }
 
     private void drawText(Vector3 position) {
 
         font.getData().setScale(0.025f);
-        font.setColor(0f, 0f, 0f, 1f);
-        String string =
-                //(int) position.x + "; " + (int) position.y +
-                //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
-                //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
-                //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
-                System.getProperty("line.separator") + "State: " + rocket.getState() +
-                        System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
+        font.setColor(0f, 1f, 0f, 1f);
+        if (player.getCurrentPlatform() != null) {
+            String string =
+                    //(int) position.x + "; " + (int) position.y +
+                    //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
+                    //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
+                    //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
+                    System.getProperty("line.separator") + "State: " + rocket.getState() +
+                    System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
 
-        font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
+            font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
+        }
     }
 
     private Body getBody(Entity entity) {
