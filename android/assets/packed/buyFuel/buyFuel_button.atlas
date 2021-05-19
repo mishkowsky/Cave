@@ -1,13 +1,13 @@
 
-restart_button.png
-size: 256, 256
+buyFuel_button.png
+size: 64, 32
 format: RGBA8888
 filter: Nearest, Nearest
 repeat: none
-restart_button
+buyFuel_button
   rotate: false
   xy: 2, 2
-  size: 180, 180
-  orig: 180, 180
+  size: 38, 22
+  orig: 38, 22
   offset: 0, 0
   index: -1

@@ -9,6 +9,7 @@ import org.spbstu.aleksandrov.view.Listener;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.Math.abs;
 import static org.spbstu.aleksandrov.model.entities.Entity.State.IDLE;
@@ -66,6 +67,9 @@ public class MyWorld {
         body.setUserData(entity);
         body.setTransform(position.x, position.y, 0);
         body.setFixedRotation(true);
+        if (entity instanceof Coin) {
+
+        }
         if (!(entity instanceof Rocket)) body.setType(BodyDef.BodyType.StaticBody);
         return body;
     }
@@ -84,6 +88,7 @@ public class MyWorld {
         }
 
         awakeNearAsteroid();
+        checkBonuses();
         if (checkDistance) disableLastPlatform();
         rocket.setAngle();
         rocket.updateFuel();
@@ -119,7 +124,7 @@ public class MyWorld {
         int index = entities.indexOf(platform);
         Body body = physicBodies.get(index);
 
-        //Gdx.app.log("nextentity", String.valueOf(entities.get(index + 1)));
+        //Gdx.app.log("next entity", String.valueOf(entities.get(index + 1)));
 
         if (body.getPosition().dst(rocketBody.getPosition()) > 5 &&
                 index + 1 < entities.size() && entities.get(index + 1) instanceof Platform) {
@@ -149,6 +154,24 @@ public class MyWorld {
         rocketBody.setTransform(position.x + 28.5f * SCALE, position.y + 25f * SCALE, 0);
     }
 
+    private void checkBonuses() {
+
+        Map<Bonus.Type, Boolean> currentBonuses = player.getCurrentBonuses();
+        for (Bonus.Type type : Bonus.Type.values()) {
+            if (currentBonuses.get(type)) {
+                switch (type) {
+                    case FUEL:
+                        rocket.changeDefaultFuelConsumption();
+                }
+            } else {
+                switch (type) {
+                    case FUEL:
+                        rocket.setDefaultFuelConsumption();
+                }
+            }
+        }
+    }
+
     public void contactProcess(Contact contact) {
 
         Body bodyA = contact.getFixtureA().getBody();
@@ -174,16 +197,17 @@ public class MyWorld {
                             abs(bodyA.getLinearVelocity().y) < 10 &&
                             abs(bodyA.getLinearVelocity().x) < 10
                     ) {
-                            Platform platform = (Platform) entities.get(i);
+                        Platform platform = (Platform) entities.get(i);
 
-                            if (platform.getFuel()) {
-                                rocket.setRefueling();
-                                if (platform.getId() > 0) player.addScore(100);
-                                player.setCurrentPlatform(platform);
-                                currentPlatformIndex = entities.indexOf(platform);
-                                platform.refuel();
-                            }
-                            if (i + 1 >= entities.size() || !(entities.get(i + 1) instanceof Platform)) rocket.setState(POP);
+                        if (platform.getFuel()) {
+                            rocket.setRefueling();
+                            if (platform.getId() > 0) player.addScore(100);
+                            player.setCurrentPlatform(platform);
+                            currentPlatformIndex = entities.indexOf(platform);
+                            platform.refuel();
+                        }
+                        if (i + 1 >= entities.size() || !(entities.get(i + 1) instanceof Platform))
+                            rocket.setState(POP);
                     } else rocket.setState(Entity.State.POP);
                     break;
 
@@ -197,7 +221,7 @@ public class MyWorld {
 
                 case "Coin":
                     entities.get(i).setState(Entity.State.POP);
-                    player.increaseBalance();
+                    player.changeBalance(1);
                     break;
             }
         } else if (bodyA.getUserData() instanceof Asteroid || bodyB.getUserData() instanceof Asteroid) {
@@ -215,7 +239,7 @@ public class MyWorld {
         Gdx.app.log("endContact", "between " + bodyA.getUserData() + " and " + bodyB.getUserData());
 
         if (bodyA.getUserData() instanceof Platform && bodyB.getUserData() instanceof Rocket ||
-                bodyA.getUserData() instanceof Rocket && bodyB.getUserData() instanceof Platform ) checkDistance = true;
+                bodyA.getUserData() instanceof Rocket && bodyB.getUserData() instanceof Platform) checkDistance = true;
     }
 
     public MyWorld(Player player, List<Entity> addEntities, int id) {

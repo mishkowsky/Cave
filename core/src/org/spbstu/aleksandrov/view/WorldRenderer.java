@@ -9,14 +9,15 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.Player;
-import org.spbstu.aleksandrov.model.entities.Asteroid;
-import org.spbstu.aleksandrov.model.entities.Entity;
-import org.spbstu.aleksandrov.model.entities.Platform;
-import org.spbstu.aleksandrov.model.entities.Rocket;
+import org.spbstu.aleksandrov.model.entities.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.spbstu.aleksandrov.model.MyWorld.SCALE;
 
@@ -28,14 +29,17 @@ public class WorldRenderer {
     private final Player player;
     private final World world;
 
+    public static boolean DEBUG = true;
+
     private final List<? extends Entity> entities;
     private final List<Body> physicBodies;
     private final List<Entity> entitiesForRemove;
 
-    private static final float CAMERA_WIDTH = 45f;
-    private static final float CAMERA_HEIGHT = 20f;
+    private static final float CAMERA_WIDTH = 40f;
+    private static final float CAMERA_HEIGHT = 25f;
     private final double DEGREES_TO_RADIANS = (Math.PI / 180);
 
+    private ExtendViewport viewport;
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Box2DDebugRenderer debugRenderer;
@@ -54,6 +58,11 @@ public class WorldRenderer {
     private Texture bonusTexture;
     private Texture platformTexture;
 
+    private final Map<Animation<TextureRegion>, Pair> currentAnimations = new HashMap<>();
+    private final List<Animation<TextureRegion>> finishedAnimations = new ArrayList<>();
+    private Animation<TextureRegion> flameAnimation;
+    private Animation<TextureRegion> popAnimation;
+
     public WorldRenderer(MyWorld myWorld) {
 
         this.myWorld = myWorld;
@@ -69,6 +78,28 @@ public class WorldRenderer {
         create();
     }
 
+    private void create() {
+        batch = new SpriteBatch();
+        shapeRenderer = new ShapeRenderer();
+        viewport = new ExtendViewport(45f, 20f);
+        camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+
+        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
+        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
+        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font.setUseIntegerPositions(false);
+
+        layout = new GlyphLayout();
+
+        loadTextures();
+
+        flameAnimation = createAnimation("flame", 10, 12, 0.25f);
+        popAnimation = createAnimation("pop", 3, 3, 0.05f);
+
+        debugRenderer = new Box2DDebugRenderer();
+    }
+
     private void loadTextures() {
         groundTexture_0 = new Texture(Gdx.files.internal("sprites/ground_0.png"));
         groundTexture_1 = new Texture(Gdx.files.internal("sprites/ground_1.png"));
@@ -82,21 +113,18 @@ public class WorldRenderer {
         platformTexture = new Texture(Gdx.files.internal("sprites/platform.png"));
     }
 
-    private void create() {
-        batch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
-        camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+    private Animation<TextureRegion> createAnimation(String name, int frameCols, int frameRows, float frameDuration) {
 
-        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
-        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
-        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font.setUseIntegerPositions(false);
-
-        layout = new GlyphLayout();
-
-        loadTextures();
-        debugRenderer = new Box2DDebugRenderer();
+        Texture texture = new Texture(Gdx.files.internal("animation/" + name + ".png"));
+        TextureRegion[][] tmp = TextureRegion.split(texture, texture.getWidth() / frameCols, texture.getHeight() / frameRows);
+        TextureRegion[] textureFrames = new TextureRegion[frameCols * frameRows];
+        int index = 0;
+        for (int i = 0; i < frameRows; i++) {
+            for (int j = 0; j < frameCols; j++) {
+                textureFrames[index++] = tmp[i][j];
+            }
+        }
+        return new Animation<>(frameDuration, textureFrames);
     }
 
     public void render() {
@@ -118,10 +146,10 @@ public class WorldRenderer {
         batch.begin();
         drawUserData();
         drawText(camera.position);
+        drawAnimations();
         batch.end();
 
-
-        debugRenderer.render(myWorld.getWorld(), camera.combined);
+        if (DEBUG) debugRenderer.render(myWorld.getWorld(), camera.combined);
     }
 
     private void moveCamera() {
@@ -148,12 +176,21 @@ public class WorldRenderer {
         //Body body = physicBodies.get(i);
 
         if (entity.getState() == Entity.State.POP) {
-            //startAnimation(entity.getPosition());
-            startAnimation(body.getPosition());
+
+            Gdx.app.log("start animation", "pop");
+
+            float width = texture.getWidth();
+            float height = texture.getHeight();
+
+            Vector2 position = body.getPosition();
+
+            position.x += width * SCALE / 2f;
+            position.y += height * SCALE / 2f;
+
+            currentAnimations.put(popAnimation, new Pair(position));
+
             if (!(entity instanceof Rocket)) entitiesForRemove.add(entity);
-            else {
-                Gdx.app.log("Rocket DEAD", "please call next screen");
-            }
+            else Gdx.app.log("Rocket DEAD", "please call next screen");
         } else {
             Sprite sprite = new Sprite(texture);
             Vector2 position = body.getPosition();
@@ -208,8 +245,36 @@ public class WorldRenderer {
         return null;
     }
 
-    private void startAnimation(Vector2 position) {
-        //TODO burst animation
+    private void drawAnimation(Animation<TextureRegion> animation, Vector2 position, Float stateTime, boolean loop) {
+
+        Gdx.app.log("animation started", position.toString());
+        Gdx.app.log("rocket pos", rocketBody.getPosition().toString());
+
+        stateTime += Gdx.graphics.getDeltaTime();
+        TextureRegion currentFrame = animation.getKeyFrame(stateTime, loop);
+
+        float height = currentFrame.getRegionHeight();
+        float width = currentFrame.getRegionWidth();
+
+        batch.draw(currentFrame, position.x, position.y,
+                -width * 0.25f * SCALE / 2f, -height * 0.25f * SCALE / 2f,
+                width, height, 0.25f * SCALE, 0.25f * SCALE, 0);
+        if (animation.isAnimationFinished(stateTime)) finishedAnimations.add(animation);
+        currentAnimations.get(animation).setStateTime(stateTime);
+    }
+
+    private void drawAnimations() {
+        for (Animation<TextureRegion> animation : currentAnimations.keySet()) {
+
+            Float stateTime = currentAnimations.get(animation).getStateTime();
+            Vector2 position = currentAnimations.get(animation).getPosition();
+            drawAnimation(animation, position, stateTime, false);
+        }
+
+        for (Animation<TextureRegion> animation : finishedAnimations) {
+            currentAnimations.remove(animation);
+        }
+        finishedAnimations.clear();
     }
 
     private void drawPlatformId(Platform platform) {
@@ -330,8 +395,11 @@ public class WorldRenderer {
                     //System.getProperty("line.separator") + "Fuel: " + (int) rocket.getFuel() +
                     //System.getProperty("line.separator") + "Score: " + player.getCurrentScore() +
                     //System.getProperty("line.separator") + "High score: " + player.getHighScore() +
-                    System.getProperty("line.separator") + "State: " + rocket.getState() +
-                    System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
+                    "Fuel bonus" + player.getCurrentBonuses().toString() +
+                            System.getProperty("line.separator") + "fuel bonuses: " + player.getInventory().get(Bonus.Type.FUEL) +
+                            System.getProperty("line.separator") + "fuel consumption" + rocket.getFuelConsumption() +
+                            System.getProperty("line.separator") + "State: " + rocket.getState() +
+                            System.getProperty("line.separator") + "Current Platform: " + player.getCurrentPlatform().getId();
 
             font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
         }
@@ -340,5 +408,32 @@ public class WorldRenderer {
     private Body getBody(Entity entity) {
         int i = entities.indexOf(entity);
         return physicBodies.get(i);
+    }
+
+    private static class Pair {
+
+        Vector2 position;
+        Float stateTime;
+
+        public Pair(Vector2 position) {
+            this.position = position;
+            this.stateTime = 0f;
+        }
+
+        public Vector2 getPosition() {
+            return position;
+        }
+
+        public void setPosition(Vector2 position) {
+            this.position = position;
+        }
+
+        public Float getStateTime() {
+            return stateTime;
+        }
+
+        public void setStateTime(Float stateTime) {
+            this.stateTime = stateTime;
+        }
     }
 }

@@ -8,10 +8,10 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.entities.Platform;
 import org.spbstu.aleksandrov.view.WorldRenderer;
@@ -31,7 +31,7 @@ public class GameOverScreen implements Screen {
         this.myWorld = myWorld;
         this.renderer = new WorldRenderer(myWorld);
         this.lastScreen = lastScreen;
-        this.stage = new Stage(new ScreenViewport());
+        this.stage = new Stage();
         create();
 
     }
@@ -42,8 +42,7 @@ public class GameOverScreen implements Screen {
         float width = stage.getWidth();
 
         Button restart = createButton("restart");
-        restart.setOrigin(Align.center);
-        restart.setPosition(width / 2f + 100f, height / 2f);
+        restart.setScale(0.5f);
 
         restart.addListener(new ChangeListener() {
             @Override
@@ -52,45 +51,54 @@ public class GameOverScreen implements Screen {
                 game.setScreen(new GameScreen(game));
 
                 System.out.println("Button restart Pressed");
-        }
+            }
         });
 
         Button respawn = createButton("respawn");
-        respawn.setOrigin(Align.center);
-        respawn.setPosition(width / 2f - 100f, height / 2f);
+        respawn.setScale(0.5f);
+
+        if (myWorld.getPlayer().getBalance() < 5) respawn.setDisabled(true);
 
         respawn.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
 
                 myWorld.respawn();
+                myWorld.getPlayer().changeBalance(-5);
                 game.setScreen(lastScreen);
-
                 System.out.println("Button respawn Pressed");
             }
         });
 
+        Table menuTable = new Table();
+
+        menuTable.add(respawn).space(0.1f);
+        menuTable.add();
+        menuTable.add(restart).space(0.1f);
+        menuTable.setFillParent(true);
 
         int i = myWorld.getCurrentPlatformIndex();
-        if (i >= myWorld.getEntities().size() || !(myWorld.getEntities().get(i + 1) instanceof Platform)) respawn.setDisabled(true);
+        if (i + 1 >= myWorld.getEntities().size() || !(myWorld.getEntities().get(i + 1) instanceof Platform))
+            respawn.setDisabled(true);
 
-        stage.addActor(restart);
-        stage.addActor(respawn);
+        stage.addActor(menuTable);
 
         Gdx.input.setInputProcessor(stage);
     }
 
-    private Button createButton(String name) {
+    public static Button createButton(String name) {
         TextureAtlas mAtlas = new TextureAtlas("packed/" + name + "/" + name + "_button.atlas");
         TextureRegionDrawable drawableUp = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_up"*/));
         TextureRegionDrawable drawableDown = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_down"*/));
         TextureRegionDrawable drawableChecked = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_checked"*/));
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
-
-        return new Button(btnStyle);
+        Button button = new Button(btnStyle);
+        button.setOrigin(Align.center);
+        button.setDebug(WorldRenderer.DEBUG);
+        button.setTransform(true);
+        return button;
     }
-
 
 
     @Override
@@ -102,17 +110,13 @@ public class GameOverScreen implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(1f, 1f, 1f, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        //renderer.render();
-
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
-
     }
 
     @Override
     public void resize(int width, int height) {
-
+        stage.getViewport().update(width, height, true);
     }
 
     @Override

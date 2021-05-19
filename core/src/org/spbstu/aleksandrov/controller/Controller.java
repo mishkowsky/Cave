@@ -6,6 +6,7 @@ import com.badlogic.gdx.physics.box2d.Body;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.entities.Entity;
 import org.spbstu.aleksandrov.model.entities.Rocket;
+import org.spbstu.aleksandrov.view.WorldRenderer;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.Input.Keys.LEFT;
@@ -54,7 +55,8 @@ public class Controller {
             if (keyPressed) {
                 rocketBody.applyForceToCenter(
                         new Vector2(rocketBody.getMass() * (x * 60), rocketBody.getMass() * (y * 11)), true);
-                rocket.decreaseFuel();
+                if (!WorldRenderer.DEBUG) rocket.decreaseFuel();
+
             }
         }
     }

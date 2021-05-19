@@ -6,14 +6,16 @@ public class Rocket extends Entity {
 
     private float angle = 0;
     private float fuel = 100f;
+    float fuelConsumption;
     private boolean refueling;
 
     public Rocket(Vector2 position) {
         super(position);
+        setDefaultFuelConsumption();
     }
 
     public void decreaseFuel() {
-        float fuelConsumption = 0.25f;
+
         this.fuel -= fuelConsumption;
     }
 
@@ -23,6 +25,14 @@ public class Rocket extends Entity {
             refueling = false;
         }
         if (refueling) fuel += 1f;
+    }
+
+    public void changeDefaultFuelConsumption() {
+        fuelConsumption = 0.25f / 1.5f;
+    }
+
+    public void setDefaultFuelConsumption() {
+        fuelConsumption = 0.25f;
     }
 
     public void setAngle() {
@@ -66,5 +76,9 @@ public class Rocket extends Entity {
 
     public void setRefueling() {
         refueling = true;
+    }
+
+    public float getFuelConsumption() {
+        return fuelConsumption;
     }
 }
