@@ -87,10 +87,15 @@ public class GameOverScreen implements Screen {
     }
 
     public static Button createButton(String name) {
-        TextureAtlas mAtlas = new TextureAtlas("packed/" + name + "/" + name + "_button.atlas");
-        TextureRegionDrawable drawableUp = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_up"*/));
-        TextureRegionDrawable drawableDown = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_down"*/));
-        TextureRegionDrawable drawableChecked = new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_checked"*/));
+
+        TextureAtlas mAtlas =
+                new TextureAtlas("packed/" + name + "/" + name + "_button.atlas");
+        TextureRegionDrawable drawableUp =
+                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_up"*/));
+        TextureRegionDrawable drawableDown =
+                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_down"*/));
+        TextureRegionDrawable drawableChecked =
+                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_checked"*/));
 
         Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
         Button button = new Button(btnStyle);

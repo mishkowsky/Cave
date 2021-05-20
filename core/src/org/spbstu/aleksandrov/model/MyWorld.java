@@ -92,7 +92,6 @@ public class MyWorld {
         if (checkDistance) disableLastPlatform();
         rocket.setAngle();
         rocket.updateFuel();
-
     }
 
     private void awakeNearAsteroid() {

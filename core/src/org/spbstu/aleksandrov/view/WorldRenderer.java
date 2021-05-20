@@ -9,6 +9,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
+import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ExtendViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.Player;
@@ -46,6 +50,7 @@ public class WorldRenderer {
     private ShapeRenderer shapeRenderer;
     private BitmapFont font;
     private GlyphLayout layout;
+    private Stage stage;
 
     private Texture rocketTexture;
     private Texture groundTexture_0;
@@ -81,8 +86,11 @@ public class WorldRenderer {
     private void create() {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
+
         viewport = new ExtendViewport(45f, 20f);
         camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
+
+        stage = new Stage(viewport, batch);
 
         Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
         fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -145,9 +153,12 @@ public class WorldRenderer {
 
         batch.begin();
         drawUserData();
-        drawText(camera.position);
+
+        if (DEBUG) drawText(camera.position);
         drawAnimations();
         batch.end();
+
+        drawEnabledBonuses();
 
         if (DEBUG) debugRenderer.render(myWorld.getWorld(), camera.combined);
     }
@@ -365,6 +376,30 @@ public class WorldRenderer {
                 position.y - cam_h * 0.45f - coin.getHeight() / 2);
         coin.setScale(SCALE * 0.5f);
         coin.draw(batch);
+    }
+
+    private void drawEnabledBonuses() {
+        //TODO
+
+        Table menuTable = new Table();
+        menuTable.left();
+        Map<Bonus.Type, Boolean> currentBonuses = player.getCurrentBonuses();
+        for (Bonus.Type type : Bonus.Type.values()) {
+            if (currentBonuses.get(type)) {
+                switch (type) {
+                    case FUEL: {
+                        /*Gdx.app.log("FUEL", "is added to table");
+                        Texture tx = new Texture("fuel.png");
+                        Image img = new Image(tx);
+                        //img.setScale(1f);
+                        menuTable.add(img);
+                        menuTable.row();*/
+                    }
+                }
+            }
+        }
+        //stage.addActor(menuTable);
+        //stage.draw();
     }
 
     private void drawBalanceBox() {

@@ -3,10 +3,15 @@ package org.spbstu.aleksandrov.view.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -26,6 +31,8 @@ public class BonusShop implements Screen {
     private final Player player;
     private final Map<Bonus.Type, Integer> inventory;
     private final WorldRenderer renderer;
+    private Label amount;
+    private Label applied;
     private final Stage stage;
     private final Screen lastScreen;
 
@@ -56,7 +63,8 @@ public class BonusShop implements Screen {
         fuel.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-
+                if (player.getCurrentBonuses().get(FUEL)) player.editInventory(FUEL, 1);
+                else player.editInventory(FUEL, -1);
                 player.changeCurrentBonus(FUEL);
 
                 System.out.println("Button fuel Pressed");
@@ -97,10 +105,32 @@ public class BonusShop implements Screen {
 
         Table menuTable = new Table();
 
+        BitmapFont font;
+        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
+        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
+        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
+        font.setUseIntegerPositions(false);
+        font.setColor(0f, 0f, 0f, 1f);
+        font.getData().setScale(0.5f);
+
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, new Color(0f, 0f, 0f, 1f));
+
         menuTable.add(fuel).space(0.1f);
         menuTable.row();
+
+        amount = new Label("In inventory: " + player.getInventory().get(FUEL), labelStyle);
+        menuTable.add(amount);
+        menuTable.row();
+
+        applied = new Label("Current status: " + player.getCurrentBonuses().get(FUEL), labelStyle);
+        menuTable.add(applied);
+        menuTable.row();
+
         menuTable.add(buyFuel).space(0.1f);
+
         menuTable.setFillParent(true);
+
         if (WorldRenderer.DEBUG) menuTable.debug();
 
         stage.addActor(menuTable);
@@ -119,6 +149,14 @@ public class BonusShop implements Screen {
     public void render(float delta) {
         Gdx.gl.glClearColor(1f, 1f, 1f, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        amount.setText("In inventory: " + player.getInventory().get(FUEL));
+
+        String appliedText;
+        if (player.getCurrentBonuses().get(FUEL)) appliedText = "applied";
+        else appliedText = "not applied";
+        applied.setText("Current status: " + appliedText);
+
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
     }
