@@ -82,6 +82,7 @@
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
 			<circle x="23.410" y="23.410" r="23.270"/>
+			<is_sensor/>
 		</fixture>
 	</body>
 
@@ -365,6 +366,7 @@
 			<filter_mask_bits>65535</filter_mask_bits>
 			<filter_group_index>0</filter_group_index>
 			<circle x="11" y="11" r="11"/>
+			<is_sensor/>
 		</fixture>
 	</body>
 

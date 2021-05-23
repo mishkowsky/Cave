@@ -15,7 +15,7 @@ import static java.lang.Math.abs;
 import static org.spbstu.aleksandrov.model.entities.Entity.State.IDLE;
 import static org.spbstu.aleksandrov.model.entities.Entity.State.POP;
 
-public class MyWorld {
+public class MyWorld implements Cloneable {
 
     private final Player player;
     private final Rocket rocket;
@@ -24,7 +24,7 @@ public class MyWorld {
     private World world;
 
     private final List<Entity> entities = new ArrayList<>();
-    private final List<Body> physicBodies = new ArrayList<>();
+    //private final List<Body> physicBodies = new ArrayList<>();
     private final List<Entity> entitiesForRemove = new ArrayList<>();
     private boolean checkDistance = false;
     private int currentPlatformIndex;
@@ -32,8 +32,8 @@ public class MyWorld {
     private PhysicsShapeCache physicsShapeCache;
 
     static final float STEP_TIME = 1f / 60f;
-    static final int VELOCITY_ITERATIONS = 6;
-    static final int POSITION_ITERATIONS = 2;
+    static final int VELOCITY_ITERATIONS = 8;
+    static final int POSITION_ITERATIONS = 3;
     public static final float SCALE = 0.05f;
 
     float accumulator = 0;
@@ -42,24 +42,26 @@ public class MyWorld {
         Box2D.init();
         world = new World(new Vector2(0, -10f), true);
         world.setContactListener(new Listener(this));
-        physicsShapeCache = new PhysicsShapeCache("physicBodies.xml");
+        physicsShapeCache = new PhysicsShapeCache("physicbodies.xml");
         createBodies();
-        rocketBody = physicBodies.get(0);
+        rocketBody = rocket.getBody();//physicBodies.get(0);
     }
 
     private void createBodies() {
 
         for (Entity entity : entities) {
-            Body body;
+
+            entity.createBody(world);
+
+            /*Body body;
             if (entity instanceof Asteroid)
                 body = createBody(entity, entity + "_" + ((Asteroid) entity).getId(), entity.getPosition());
             else if (entity instanceof Ground)
                 body = createBody(entity, entity + "_" + id, entity.getPosition());
             else
                 body = createBody(entity, entity.toString(), entity.getPosition());
-            physicBodies.add(body);
+            physicBodies.add(body);*/
         }
-
     }
 
     private Body createBody(Entity entity, String name, Vector2 position) {
@@ -67,9 +69,6 @@ public class MyWorld {
         body.setUserData(entity);
         body.setTransform(position.x, position.y, 0);
         body.setFixedRotation(true);
-        if (entity instanceof Coin) {
-
-        }
         if (!(entity instanceof Rocket)) body.setType(BodyDef.BodyType.StaticBody);
         return body;
     }
@@ -99,7 +98,7 @@ public class MyWorld {
         for (Entity asteroid : entities) {
             if (asteroid instanceof Asteroid) {
                 int i = entities.indexOf(asteroid);
-                Body asteroidBody = physicBodies.get(i);
+                Body asteroidBody = asteroid.getBody();//physicBodies.get(i);
                 boolean isDynamic = ((Asteroid) asteroid).isDynamic();
 
                 Vector2 position = asteroidBody.getPosition();
@@ -121,7 +120,7 @@ public class MyWorld {
 
         Platform platform = player.getCurrentPlatform();
         int index = entities.indexOf(platform);
-        Body body = physicBodies.get(index);
+        Body body = platform.getBody();//physicBodies.get(index);
 
         //Gdx.app.log("next entity", String.valueOf(entities.get(index + 1)));
 
@@ -130,7 +129,6 @@ public class MyWorld {
             platform.setState(POP);
             checkDistance = false;
         }
-
     }
 
     public void respawn() {
@@ -154,9 +152,8 @@ public class MyWorld {
     }
 
     private void checkBonuses() {
-
         Map<Bonus.Type, Boolean> currentBonuses = player.getCurrentBonuses();
-        for (Bonus.Type type : Bonus.Type.values()) {
+        for (Bonus.Type type : currentBonuses.keySet()) {
             if (currentBonuses.get(type)) {
                 switch (type) {
                     case FUEL:
@@ -186,8 +183,6 @@ public class MyWorld {
                 bodyA = s;
             }
 
-            int i = physicBodies.indexOf(bodyB);
-
             switch (bodyB.getUserData().getClass().getSimpleName()) {
 
                 case "Platform":
@@ -196,7 +191,8 @@ public class MyWorld {
                             abs(bodyA.getLinearVelocity().y) < 10 &&
                             abs(bodyA.getLinearVelocity().x) < 10
                     ) {
-                        Platform platform = (Platform) entities.get(i);
+                        Platform platform = (Platform) bodyB.getUserData();
+                        int i = entities.indexOf(platform);
 
                         if (platform.getFuel()) {
                             rocket.setRefueling();
@@ -205,6 +201,7 @@ public class MyWorld {
                             currentPlatformIndex = entities.indexOf(platform);
                             platform.refuel();
                         }
+                        //TODO check this
                         if (i + 1 >= entities.size() || !(entities.get(i + 1) instanceof Platform))
                             rocket.setState(POP);
                     } else rocket.setState(Entity.State.POP);
@@ -215,19 +212,24 @@ public class MyWorld {
                     rocket.setState(Rocket.State.POP);
                     break;
                 case "Bonus":
-                    entities.get(i).setState(Entity.State.POP);
+                    ((Bonus) bodyB.getUserData()).setState(Entity.State.POP);
                     break;
-
                 case "Coin":
-                    entities.get(i).setState(Entity.State.POP);
-                    player.changeBalance(1);
+                    Coin coin = (Coin) bodyB.getUserData();
+                    if (coin.getState() != POP) player.changeBalance(1);
+                    coin.setState(Entity.State.POP);
                     break;
             }
         } else if (bodyA.getUserData() instanceof Asteroid || bodyB.getUserData() instanceof Asteroid) {
-            if (bodyA.getUserData() instanceof Asteroid) bodyB = bodyA;
-            int i = physicBodies.indexOf(bodyB);
-            Asteroid asteroid = (Asteroid) entities.get(i);
-            asteroid.setState(Entity.State.POP);
+            if (bodyB.getUserData() instanceof Asteroid) {
+                Body t = bodyB;
+                bodyB = bodyA;
+                bodyA = t;
+            }
+            if (!(bodyB.getUserData() instanceof Bonus) && !(bodyB.getUserData() instanceof Coin)) {
+                Asteroid asteroid = (Asteroid) bodyA.getUserData();
+                asteroid.setState(Entity.State.POP);
+            }
         }
     }
 
@@ -241,11 +243,11 @@ public class MyWorld {
                 bodyA.getUserData() instanceof Rocket && bodyB.getUserData() instanceof Platform) checkDistance = true;
     }
 
-    public MyWorld(Player player, List<Entity> addEntities, int id) {
+    public MyWorld(List<Entity> addEntities, int id) {
 
         Platform.resetIdCounter();
 
-        this.player = player;
+        this.player = new Player();
         entities.addAll(addEntities);
         this.rocket = (Rocket) entities.get(0);
 
@@ -266,10 +268,6 @@ public class MyWorld {
         return entities;
     }
 
-    public List<Body> getPhysicBodies() {
-        return physicBodies;
-    }
-
     public World getWorld() {
         return world;
     }
@@ -285,4 +283,17 @@ public class MyWorld {
     public int getCurrentPlatformIndex() {
         return currentPlatformIndex;
     }
+
+    /*@Override
+    public MyWorld clone() throws CloneNotSupportedException {
+
+        MyWorld newWorld = (MyWorld) super.clone();
+
+        newWorld.getEntities().clear();
+        for (Entity entity : this.getEntities()) {
+            newWorld.getEntities().add( (Rocket) entity.clone());
+        }
+
+        return newWorld;
+    }*/
 }

@@ -9,11 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.physics.box2d.*;
-import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.ExtendViewport;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.Player;
 import org.spbstu.aleksandrov.model.entities.*;
@@ -36,47 +32,46 @@ public class WorldRenderer {
     public static boolean DEBUG = true;
 
     private final List<? extends Entity> entities;
-    private final List<Body> physicBodies;
     private final List<Entity> entitiesForRemove;
 
     private static final float CAMERA_WIDTH = 40f;
     private static final float CAMERA_HEIGHT = 25f;
     private final double DEGREES_TO_RADIANS = (Math.PI / 180);
 
-    private ExtendViewport viewport;
+    private FitViewport viewport;
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private Box2DDebugRenderer debugRenderer;
     private ShapeRenderer shapeRenderer;
     private BitmapFont font;
     private GlyphLayout layout;
-    private Stage stage;
 
-    private Texture rocketTexture;
-    private Texture groundTexture_0;
-    private Texture groundTexture_1;
-    private Texture asteroidTexture_0;
-    private Texture asteroidTexture_1;
-    private Texture asteroidTexture_2;
-    private Texture asteroidTexture_3;
-    private Texture coinTexture;
-    private Texture bonusTexture;
-    private Texture platformTexture;
+    private static final Map<String, Texture> textureMap = new HashMap<>();
 
     private final Map<Animation<TextureRegion>, Pair> currentAnimations = new HashMap<>();
     private final List<Animation<TextureRegion>> finishedAnimations = new ArrayList<>();
     private Animation<TextureRegion> flameAnimation;
     private Animation<TextureRegion> popAnimation;
 
+    static {
+        textureMap.put("ground_0", new Texture(Gdx.files.internal("sprites/ground_0.png")));
+        textureMap.put("ground_1", new Texture(Gdx.files.internal("sprites/ground_1.png")));
+        textureMap.put("rocket", new Texture(Gdx.files.internal("sprites/rocket.png")));
+        textureMap.put("coin", new Texture(Gdx.files.internal("sprites/coin.png")));
+        textureMap.put("asteroid_0", new Texture(Gdx.files.internal("sprites/asteroid_0.png")));
+        textureMap.put("asteroid_1", new Texture(Gdx.files.internal("sprites/asteroid_1.png")));
+        textureMap.put("asteroid_2", new Texture(Gdx.files.internal("sprites/asteroid_2.png")));
+        textureMap.put("asteroid_3", new Texture(Gdx.files.internal("sprites/asteroid_3.png")));
+        textureMap.put("platform", new Texture(Gdx.files.internal("sprites/platform.png")));
+    }
+
     public WorldRenderer(MyWorld myWorld) {
 
         this.myWorld = myWorld;
-
         this.world = myWorld.getWorld();
         this.entities = myWorld.getEntities();
-        this.physicBodies = myWorld.getPhysicBodies();
         this.rocket = myWorld.getRocket();
-        this.rocketBody = physicBodies.get(0);
+        this.rocketBody = rocket.getBody();
         this.player = myWorld.getPlayer();
         this.entitiesForRemove = myWorld.getEntitiesForRemove();
 
@@ -87,10 +82,9 @@ public class WorldRenderer {
         batch = new SpriteBatch();
         shapeRenderer = new ShapeRenderer();
 
-        viewport = new ExtendViewport(45f, 20f);
         camera = new OrthographicCamera(CAMERA_WIDTH, CAMERA_HEIGHT);
 
-        stage = new Stage(viewport, batch);
+        viewport = new FitViewport(camera.viewportWidth, camera.viewportHeight, camera);
 
         Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
         fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
@@ -100,31 +94,17 @@ public class WorldRenderer {
 
         layout = new GlyphLayout();
 
-        loadTextures();
-
         flameAnimation = createAnimation("flame", 10, 12, 0.25f);
         popAnimation = createAnimation("pop", 3, 3, 0.05f);
 
         debugRenderer = new Box2DDebugRenderer();
     }
 
-    private void loadTextures() {
-        groundTexture_0 = new Texture(Gdx.files.internal("sprites/ground_0.png"));
-        groundTexture_1 = new Texture(Gdx.files.internal("sprites/ground_1.png"));
-        rocketTexture = new Texture(Gdx.files.internal("sprites/rocket.png"));
-        coinTexture = new Texture(Gdx.files.internal("sprites/coin.png"));
-        //bonusTexture = new Texture(Gdx.files.internal("bonus.png"));
-        asteroidTexture_0 = new Texture(Gdx.files.internal("sprites/asteroid_0.png"));
-        asteroidTexture_1 = new Texture(Gdx.files.internal("sprites/asteroid_1.png"));
-        asteroidTexture_2 = new Texture(Gdx.files.internal("sprites/asteroid_2.png"));
-        asteroidTexture_3 = new Texture(Gdx.files.internal("sprites/asteroid_3.png"));
-        platformTexture = new Texture(Gdx.files.internal("sprites/platform.png"));
-    }
-
     private Animation<TextureRegion> createAnimation(String name, int frameCols, int frameRows, float frameDuration) {
 
         Texture texture = new Texture(Gdx.files.internal("animation/" + name + ".png"));
-        TextureRegion[][] tmp = TextureRegion.split(texture, texture.getWidth() / frameCols, texture.getHeight() / frameRows);
+        TextureRegion[][] tmp = TextureRegion.split(texture,
+                texture.getWidth() / frameCols, texture.getHeight() / frameRows);
         TextureRegion[] textureFrames = new TextureRegion[frameCols * frameRows];
         int index = 0;
         for (int i = 0; i < frameRows; i++) {
@@ -148,7 +128,13 @@ public class WorldRenderer {
 
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         drawFuelBar();
-        drawBalanceBox();
+
+        Vector3 position = camera.position;
+        drawRoundedBox(15f, 50f,
+                position.x + camera.viewportWidth * 0.425f, position.y - camera.viewportHeight * 0.45f);
+        drawRoundedBox(50f, 50f,
+                camera.position.x, camera.position.y + camera.viewportHeight / 2 - 28f * SCALE);
+
         shapeRenderer.end();
 
         batch.begin();
@@ -157,8 +143,6 @@ public class WorldRenderer {
         if (DEBUG) drawText(camera.position);
         drawAnimations();
         batch.end();
-
-        drawEnabledBonuses();
 
         if (DEBUG) debugRenderer.render(myWorld.getWorld(), camera.combined);
     }
@@ -174,17 +158,14 @@ public class WorldRenderer {
         camera.update();
         batch.setProjectionMatrix(camera.combined);
         shapeRenderer.setProjectionMatrix(camera.combined);
+
     }
 
     private void drawEntity(Entity entity) {
 
         Texture texture = getTexture(entity);
 
-        Body body = getBody(entity);
-
-        //TODO
-        //int i = entities.indexOf(entity);
-        //Body body = physicBodies.get(i);
+        Body body = entity.getBody();
 
         if (entity.getState() == Entity.State.POP) {
 
@@ -226,34 +207,7 @@ public class WorldRenderer {
     }
 
     private Texture getTexture(Entity entity) {
-        switch (entity.getClass().getSimpleName()) {
-            case "Rocket":
-                return rocketTexture;
-            case "Ground":
-                switch (myWorld.getId()) {
-                    case 0:
-                        return groundTexture_0;
-                    case 1:
-                        return groundTexture_1;
-                }
-            case "Platform":
-                return platformTexture;
-            case "Coin":
-                return coinTexture;
-            case "Asteroid":
-                switch (((Asteroid) entity).getId()) {
-                    case 0:
-                        return asteroidTexture_0;
-                    case 1:
-                        return asteroidTexture_1;
-                    case 2:
-                        return asteroidTexture_2;
-                    case 3:
-                        return asteroidTexture_3;
-                }
-
-        }
-        return null;
+        return textureMap.get(entity.toString());
     }
 
     private void drawAnimation(Animation<TextureRegion> animation, Vector2 position, Float stateTime, boolean loop) {
@@ -299,6 +253,7 @@ public class WorldRenderer {
         layout.setText(font, string);
         float height = layout.height;
         float width = layout.width;
+        Texture platformTexture = textureMap.get("platform");
 
         font.draw(batch, string, position.x + platformTexture.getWidth() * SCALE / 2f - width / 2f,
                 position.y + platformTexture.getHeight() * SCALE / 2f + height / 2f);
@@ -352,7 +307,7 @@ public class WorldRenderer {
         width = layout.width;
 
         font.draw(batch, currentScore, camera.position.x - width / 2f,
-                camera.position.y + camera.viewportHeight / 2);
+                camera.position.y + camera.viewportHeight / 2 - 10f * SCALE);
 
         font.getData().setScale(0.015f);
         String highScore = String.valueOf(player.getHighScore());
@@ -360,7 +315,7 @@ public class WorldRenderer {
         width = layout.width;
 
         font.draw(batch, highScore, camera.position.x - width / 2f,
-                camera.position.y + camera.viewportHeight / 2 - 25f * SCALE);
+                camera.position.y + camera.viewportHeight / 2 - 35f * SCALE);
 
         font.getData().setScale(0.015f);
         String balance = String.valueOf(player.getBalance());
@@ -370,7 +325,7 @@ public class WorldRenderer {
         font.draw(batch, balance, position.x + cam_w * 0.425f - width / 2,
                 position.y - cam_h * 0.45f + height / 2);
 
-        Sprite coin = new Sprite(coinTexture);
+        Sprite coin = new Sprite(textureMap.get("coin"));
 
         coin.setPosition(position.x + cam_w * 0.4f - coin.getWidth() / 2,
                 position.y - cam_h * 0.45f - coin.getHeight() / 2);
@@ -378,45 +333,18 @@ public class WorldRenderer {
         coin.draw(batch);
     }
 
-    private void drawEnabledBonuses() {
-        //TODO
+    private void drawRoundedBox(float rect_h, float rect_w, float x, float y) {
 
-        Table menuTable = new Table();
-        menuTable.left();
-        Map<Bonus.Type, Boolean> currentBonuses = player.getCurrentBonuses();
-        for (Bonus.Type type : Bonus.Type.values()) {
-            if (currentBonuses.get(type)) {
-                switch (type) {
-                    case FUEL: {
-                        /*Gdx.app.log("FUEL", "is added to table");
-                        Texture tx = new Texture("fuel.png");
-                        Image img = new Image(tx);
-                        //img.setScale(1f);
-                        menuTable.add(img);
-                        menuTable.row();*/
-                    }
-                }
-            }
-        }
-        //stage.addActor(menuTable);
-        //stage.draw();
-    }
-
-    private void drawBalanceBox() {
-
-        Vector3 position = camera.position;
-        final float cam_h = camera.viewportHeight;
-        final float cam_w = camera.viewportWidth;
-        final float rect_h = 15f * SCALE;
-        final float rect_w = 50f * SCALE;
+        rect_h *= SCALE;
+        rect_w *= SCALE;
 
         shapeRenderer.set(ShapeRenderer.ShapeType.Filled);
         shapeRenderer.setColor(1f, 1f, 1f, 1f);
-        shapeRenderer.rect(position.x + cam_w * 0.425f - rect_w / 2, position.y - cam_h * 0.45f - rect_h / 2,
+        shapeRenderer.rect(x - rect_w / 2, y - rect_h / 2,
                 rect_w, rect_h);
-        shapeRenderer.arc(position.x + cam_w * 0.425f - rect_w / 2, position.y - cam_h * 0.45f,
+        shapeRenderer.arc(x - rect_w / 2, y,
                 rect_h / 2, 90f, 180, 180);
-        shapeRenderer.arc(position.x + cam_w * 0.425f + rect_w / 2, position.y - cam_h * 0.45f,
+        shapeRenderer.arc(x + rect_w / 2, y,
                 rect_h / 2, -90f, 180, 180);
     }
 
@@ -438,11 +366,6 @@ public class WorldRenderer {
 
             font.draw(batch, string, position.x + 50 * SCALE, position.y + 200 * SCALE);
         }
-    }
-
-    private Body getBody(Entity entity) {
-        int i = entities.indexOf(entity);
-        return physicBodies.get(i);
     }
 
     private static class Pair {

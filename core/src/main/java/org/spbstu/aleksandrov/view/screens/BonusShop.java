@@ -5,9 +5,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -33,6 +31,9 @@ public class BonusShop implements Screen {
     private final WorldRenderer renderer;
     private Label amount;
     private Label applied;
+    private Button fuel;
+    private Button buyFuel;
+    private Button esc;
     private final Stage stage;
     private final Screen lastScreen;
 
@@ -55,10 +56,9 @@ public class BonusShop implements Screen {
         float width = stage.getWidth();
 
         //TODO change amount in the inventory when applied
-        Button fuel = GameOverScreen.createButton("fuel");
-        fuel.setScale(0.5f);
 
-        if (inventory.get(FUEL) == 0) fuel.setDisabled(true);
+        fuel = Utils.createButton("fuel");
+        fuel.setScale(1f);
 
         fuel.addListener(new ChangeListener() {
             @Override
@@ -71,8 +71,8 @@ public class BonusShop implements Screen {
             }
         });
 
-        Button buyFuel = GameOverScreen.createButton("buyFuel");
-        buyFuel.setScale(0.5f);
+        buyFuel = Utils.createButton("buyFuel");
+        buyFuel.setScale(1f);
 
         if (myWorld.getPlayer().getBalance() < 5) buyFuel.setDisabled(true);
 
@@ -87,7 +87,7 @@ public class BonusShop implements Screen {
             }
         });
 
-        Button esc = GameOverScreen.createButton("esc");
+        esc = Utils.createButton("esc");
         esc.setScale(0.5f);
         esc.setPosition(width * 0.7f, height * 0.7f);
 
@@ -104,19 +104,14 @@ public class BonusShop implements Screen {
         //TODO add text information about amount in the inventory & current status of the bonus
 
         Table menuTable = new Table();
+        //menuTable.setScale(0.5f);
 
-        BitmapFont font;
-        Texture fontT = new Texture(Gdx.files.internal("android/assets/font.png"));
-        fontT.setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font = new BitmapFont(Gdx.files.internal("android/assets/font.fnt"), new TextureRegion(fontT), false);
-        font.getRegion().getTexture().setFilter(Texture.TextureFilter.Linear, Texture.TextureFilter.Linear);
-        font.setUseIntegerPositions(false);
-        font.setColor(0f, 0f, 0f, 1f);
+        BitmapFont font = Utils.createFont();
         font.getData().setScale(0.5f);
 
         Label.LabelStyle labelStyle = new Label.LabelStyle(font, new Color(0f, 0f, 0f, 1f));
 
-        menuTable.add(fuel).space(0.1f);
+        menuTable.add(fuel);
         menuTable.row();
 
         amount = new Label("In inventory: " + player.getInventory().get(FUEL), labelStyle);
@@ -127,7 +122,7 @@ public class BonusShop implements Screen {
         menuTable.add(applied);
         menuTable.row();
 
-        menuTable.add(buyFuel).space(0.1f);
+        menuTable.add(buyFuel);
 
         menuTable.setFillParent(true);
 
@@ -137,7 +132,11 @@ public class BonusShop implements Screen {
         stage.addActor(esc);
 
         Gdx.input.setInputProcessor(stage);
+    }
 
+    private void updateButtonStatus() {
+        buyFuel.setDisabled(myWorld.getPlayer().getBalance() < 5);
+        fuel.setDisabled(inventory.get(FUEL) == 0);
     }
 
     @Override
@@ -150,12 +149,14 @@ public class BonusShop implements Screen {
         Gdx.gl.glClearColor(1f, 1f, 1f, 0);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
+        updateButtonStatus();
+
         amount.setText("In inventory: " + player.getInventory().get(FUEL));
 
         String appliedText;
-        if (player.getCurrentBonuses().get(FUEL)) appliedText = "applied";
-        else appliedText = "not applied";
-        applied.setText("Current status: " + appliedText);
+        if (player.getCurrentBonuses().get(FUEL)) appliedText = "Bonus is applied";
+        else appliedText = "Bonus is not applied";
+        applied.setText(appliedText);
 
         stage.act(Gdx.graphics.getDeltaTime());
         stage.draw();
@@ -163,6 +164,14 @@ public class BonusShop implements Screen {
 
     @Override
     public void resize(int width, int height) {
+
+        stage.getCamera().viewportWidth = width;
+        stage.getCamera().viewportHeight = height;
+        stage.getViewport().update(width, height, true);
+
+        float height1 = stage.getHeight();
+        float width1 = stage.getWidth();
+        esc.setPosition(width1 * 0.7f, height1 * 0.7f);
 
     }
 

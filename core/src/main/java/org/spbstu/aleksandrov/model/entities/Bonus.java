@@ -15,6 +15,10 @@ public class Bonus extends Entity {
         this.type = type;
     }
 
+    public Bonus() {
+        super();
+    }
+
     @Override
     public String toString() {
         return "bonus";

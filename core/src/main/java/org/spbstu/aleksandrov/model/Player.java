@@ -3,7 +3,6 @@ package org.spbstu.aleksandrov.model;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Preferences;
 import org.spbstu.aleksandrov.model.entities.Bonus;
-import org.spbstu.aleksandrov.model.entities.Entity;
 import org.spbstu.aleksandrov.model.entities.Platform;
 
 import java.util.HashMap;
@@ -27,6 +26,8 @@ public class Player {
             inventory.put(type, prefs.getInteger(type.toString(), 0));
             currentBonuses.put(type, false);
         }
+
+        //changeCurrentBonus(Bonus.Type.FUEL);
     }
 
     public void addScore(int delta) {

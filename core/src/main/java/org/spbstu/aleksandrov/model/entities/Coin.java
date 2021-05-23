@@ -2,14 +2,18 @@ package org.spbstu.aleksandrov.model.entities;
 
 import com.badlogic.gdx.math.Vector2;
 
-public class Ground extends Entity {
+public class Coin extends Entity {
 
-    public Ground(Vector2 position) {
+    public Coin(Vector2 position) {
         super(position);
+    }
+
+    public Coin() {
+        super();
     }
 
     @Override
     public String toString() {
-        return "ground";
+        return "coin";
     }
 }

@@ -8,14 +8,17 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import org.spbstu.aleksandrov.DataHolder;
+import com.badlogic.gdx.utils.viewport.*;
+import org.spbstu.aleksandrov.WorldLoader;
 import org.spbstu.aleksandrov.controller.Controller;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.entities.*;
 import org.spbstu.aleksandrov.view.WorldRenderer;
 
 import java.util.List;
+import java.util.Map;
 
 import static org.spbstu.aleksandrov.model.entities.Entity.State.IDLE;
 
@@ -27,6 +30,7 @@ public class GameScreen implements Screen {
     private final WorldRenderer renderer;
     private Stage stage;
     private Button bonusShop;
+    private Table bonusTable;
     private final List<? extends Entity> entities;
 
     public GameScreen(Game game) {
@@ -35,28 +39,28 @@ public class GameScreen implements Screen {
 
         this.game = game;
 
-        myWorld = DataHolder.getWorld();
+        myWorld = WorldLoader.getWorld();
 
         this.renderer = new WorldRenderer(myWorld);
         this.entities = myWorld.getEntities();
         this.controller = new Controller(myWorld);
 
-        this.stage = new Stage();
+        this.stage = new Stage(new ScreenViewport());
         createStage();
     }
 
     private void createStage() {
 
-        stage = new Stage();
+        stage = new Stage(new ScreenViewport());
 
-        bonusShop = GameOverScreen.createButton("bonus");
+        bonusTable = new Table();
+        bonusTable.left();
+        bonusTable.top();
 
-        bonusShop.setTransform(true);
+        bonusShop = Utils.createButton("bonus");
+
+        //bonusShop.setTransform(true);
         bonusShop.setScale(0.5f);
-
-        float width = stage.getWidth();
-
-        bonusShop.setPosition(width * 0.0125f, width * 0.0125f);
 
         bonusShop.addListener(new ChangeListener() {
             @Override
@@ -68,6 +72,7 @@ public class GameScreen implements Screen {
             }
         });
 
+        stage.addActor(bonusTable);
         stage.addActor(bonusShop);
 
         Gdx.input.setInputProcessor(stage);
@@ -81,52 +86,60 @@ public class GameScreen implements Screen {
     @Override
     public void render(float delta) {
 
-        Gdx.gl.glClearColor(1f, 1f, 1f, 0);
+        Gdx.gl.glClearColor(1f, 1f, 1f, 0f);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         List<Entity> entitiesForRemove = myWorld.getEntitiesForRemove();
-
-        stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
-        stage.getCamera().update();
-
         for (Entity entity : entitiesForRemove) {
 
-            int i = entities.indexOf(entity);
-            Body body = myWorld.getPhysicBodies().get(i);
+            Body body = entity.getBody();
             entities.remove(entity);
 
             if (body != null) {
                 Gdx.app.log("deleteBody", entity.toString());
                 myWorld.getWorld().destroyBody(body);
             }
-            myWorld.getPhysicBodies().remove(i);
         }
 
         entitiesForRemove.clear();
 
         myWorld.stepWorld();
-        Rocket rocket = myWorld.getRocket();
 
+        Rocket rocket = myWorld.getRocket();
         if (rocket.getState() == Entity.State.POP) game.setScreen(new GameOverScreen(game, myWorld, this));
 
         stage.act(Gdx.graphics.getDeltaTime());
 
-
         controller.processInput();
         renderer.render();
 
-        if (rocket.getState() == IDLE && rocket.getAngle() == 0) {
-            bonusShop.setDisabled(false);
-            stage.draw();
-        } else bonusShop.setDisabled(true);
+        bonusShop.setVisible(rocket.getState() == IDLE && rocket.getAngle() == 0);
+        bonusShop.setDisabled(rocket.getState() != IDLE || rocket.getAngle() != 0);
 
+        addEnabledBonuses();
+        stage.draw();
     }
 
+    private void addEnabledBonuses() {
+        Map<Bonus.Type, Boolean> currentBonuses = myWorld.getPlayer().getCurrentBonuses();
+        bonusTable.clear();
+        for (Bonus.Type type : Bonus.Type.values()) {
+            if (currentBonuses.get(type)) {
+                switch (type) {
+                    case FUEL:
+                        Utils.addImgToTable(bonusTable, "fuel.png", 1f, 90f, 90f);
+                }
+            }
+        }
+        bonusTable.setFillParent(true);
+        if (WorldRenderer.DEBUG) bonusTable.debug();
+    }
 
     @Override
     public void resize(int width, int height) {
+        stage.getCamera().viewportWidth = Gdx.graphics.getWidth();
+        stage.getCamera().viewportHeight = Gdx.graphics.getHeight();
         stage.getViewport().update(width, height, true);
-        stage.getBatch().setProjectionMatrix(stage.getCamera().combined);
     }
 
     @Override

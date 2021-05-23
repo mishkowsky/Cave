@@ -1,0 +1,37 @@
+[
+{
+	class: org.spbstu.aleksandrov.model.entities.Rocket
+	position: {
+		x: 1.4250001
+		y: 186.25
+	}
+	fuelConsumption: 0.25
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Ground
+	id: 0
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		y: 185
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 3.5
+		y: 125
+	}
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 22
+		y: 156.75
+	}
+	dynamic: true
+	id: 2
+}
+]

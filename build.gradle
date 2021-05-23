@@ -80,6 +80,14 @@ project(":core") {
 
 
     dependencies {
+        testCompile "junit:junit:4.13.2"
+        testCompile "com.badlogicgames.gdx:gdx-backend-headless:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+        testCompile "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
+        testCompile "com.badlogicgames.gdx:gdx-box2d-platform:$gdxVersion:natives-desktop"
+
+        testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: '5.8.0-M1'
         api "com.badlogicgames.gdx:gdx:$gdxVersion"
         api "com.badlogicgames.gdx:gdx-box2d:$gdxVersion"
         compile "com.codeandweb.physicseditor:gdx-pe-loader:1.1.0"

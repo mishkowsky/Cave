@@ -3,19 +3,19 @@ package org.spbstu.aleksandrov.view.screens;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import org.spbstu.aleksandrov.model.MyWorld;
 import org.spbstu.aleksandrov.model.entities.Platform;
 import org.spbstu.aleksandrov.view.WorldRenderer;
-
 
 public class GameOverScreen implements Screen {
 
@@ -31,17 +31,14 @@ public class GameOverScreen implements Screen {
         this.myWorld = myWorld;
         this.renderer = new WorldRenderer(myWorld);
         this.lastScreen = lastScreen;
-        this.stage = new Stage();
+        this.stage = new Stage(new ScreenViewport());
         create();
 
     }
 
     private void create() {
 
-        float height = stage.getHeight();
-        float width = stage.getWidth();
-
-        Button restart = createButton("restart");
+        Button restart = Utils.createButton("restart");
         restart.setScale(0.5f);
 
         restart.addListener(new ChangeListener() {
@@ -54,7 +51,7 @@ public class GameOverScreen implements Screen {
             }
         });
 
-        Button respawn = createButton("respawn");
+        Button respawn = Utils.createButton("respawn");
         respawn.setScale(0.5f);
 
         if (myWorld.getPlayer().getBalance() < 5) respawn.setDisabled(true);
@@ -70,11 +67,29 @@ public class GameOverScreen implements Screen {
             }
         });
 
-        Table menuTable = new Table();
+        BitmapFont font = Utils.createFont();
+        font.getData().setScale(0.5f);
 
-        menuTable.add(respawn).space(0.1f);
-        menuTable.add();
-        menuTable.add(restart).space(0.1f);
+        Label.LabelStyle labelStyle = new Label.LabelStyle(font, new Color(0f, 0f, 0f, 1f));
+
+        Table menuTable = new Table();
+        menuTable.debug();
+        menuTable.center();
+
+        Label score;
+        if (myWorld.getPlayer().getCurrentScore() == myWorld.getPlayer().getHighScore())
+            score = new Label("New high score: " + myWorld.getPlayer().getCurrentScore(), labelStyle);
+        else score = new Label("Your score: " + myWorld.getPlayer().getCurrentScore(), labelStyle);
+
+        menuTable.add(score).colspan(2);
+        menuTable.row();
+        menuTable.add(new Label("Continue", labelStyle));
+        menuTable.add(new Label("Restart", labelStyle));
+        menuTable.row();
+        menuTable.add(respawn);
+        menuTable.add(restart);
+        menuTable.row();
+        Utils.addImgToTable(menuTable, "packed/buyFuel/buyFuel_button.png", 1f, 32f, 64f);
         menuTable.setFillParent(true);
 
         int i = myWorld.getCurrentPlatformIndex();
@@ -85,26 +100,6 @@ public class GameOverScreen implements Screen {
 
         Gdx.input.setInputProcessor(stage);
     }
-
-    public static Button createButton(String name) {
-
-        TextureAtlas mAtlas =
-                new TextureAtlas("packed/" + name + "/" + name + "_button.atlas");
-        TextureRegionDrawable drawableUp =
-                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_up"*/));
-        TextureRegionDrawable drawableDown =
-                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_down"*/));
-        TextureRegionDrawable drawableChecked =
-                new TextureRegionDrawable(mAtlas.findRegion(name + "_button"/*+ "_checked"*/));
-
-        Button.ButtonStyle btnStyle = new Button.ButtonStyle(drawableUp, drawableDown, drawableChecked);
-        Button button = new Button(btnStyle);
-        button.setOrigin(Align.center);
-        button.setDebug(WorldRenderer.DEBUG);
-        button.setTransform(true);
-        return button;
-    }
-
 
     @Override
     public void show() {
@@ -121,6 +116,8 @@ public class GameOverScreen implements Screen {
 
     @Override
     public void resize(int width, int height) {
+        stage.getCamera().viewportWidth = width;
+        stage.getCamera().viewportHeight = height;
         stage.getViewport().update(width, height, true);
     }
 

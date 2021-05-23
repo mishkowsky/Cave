@@ -2,6 +2,12 @@ targetCompatibility = JavaVersion.VERSION_1_9
 sourceCompatibility = 1.9
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
 
-sourceSets.main.java.srcDirs = [ "src/" ]
+/*sourceSets.main.java.srcDirs = [ "src/" ]*/
+sourceSets.main.java.srcDirs = [ "src/main/java/" ]
+sourceSets.test.java.srcDirs = [ "src/test/java/" ]
+
+test {
+    useJUnitPlatform()
+}
 
 eclipse.project.name = appName + "-core"

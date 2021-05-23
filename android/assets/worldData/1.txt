@@ -1,0 +1,419 @@
+[
+{
+	class: org.spbstu.aleksandrov.model.entities.Rocket
+	position: {
+		x: 30.025
+		y: 388.05002
+	}
+	fuelConsumption: 0.25
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Ground
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 28.6
+		y: 386.55002
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 26
+		y: 348.5
+	}
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 28.5
+		y: 313.5
+	}
+	id: 2
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 65.950005
+		y: 280.95
+	}
+	id: 3
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 58.7
+		y: 239.1
+	}
+	id: 4
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 15.650001
+		y: 229.1
+	}
+	id: 5
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 15.5
+		y: 176.90001
+	}
+	id: 6
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 69.4
+		y: 136.7
+	}
+	id: 7
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 18.75
+		y: 112.15
+	}
+	id: 8
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 31.800001
+		y: 75.55
+	}
+	id: 9
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Platform
+	position: {
+		x: 50.9
+		y: 27.4
+	}
+	id: 10
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 30
+		y: 377.5
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 31.95
+		y: 368.55002
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 30.550001
+		y: 355.4
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 25
+		y: 342.6
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 30.550001
+		y: 355.4
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 16.35
+		y: 329.35
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 22.25
+		y: 316.15
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 43.5
+		y: 321.15
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 65
+		y: 313.4
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 68.3
+		y: 295.65
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 64.6
+		y: 269.25
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 62.2
+		y: 248
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 49.4
+		y: 239
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 45.7
+		y: 238.6
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 40.850002
+		y: 239.25
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 24.65
+		y: 237
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 9.1
+		y: 220.85
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 9.900001
+		y: 196.7
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 16.65
+		y: 183.15001
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 28.75
+		y: 165.3
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 40.8
+		y: 152.5
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 63.2
+		y: 145.45
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 60.100002
+		y: 120.700005
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 41.25
+		y: 126.700005
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 25.6
+		y: 280.4
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 20.5
+		y: 102.700005
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 26.1
+		y: 86.05
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 40.100002
+		y: 72.450005
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 55
+		y: 64.05
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 49.8
+		y: 49.850002
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 27.300001
+		y: 352.55002
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Coin
+	position: {
+		x: 39.95
+		y: 37.4
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 28.5
+		y: 361.95
+	}
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 35
+		y: 354.9
+	}
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 13.150001
+		y: 332.1
+	}
+	dynamic: true
+	id: 2
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 65.75
+		y: 315.15
+	}
+	dynamic: true
+	id: 3
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 61.5
+		y: 86.200005
+	}
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 65.3
+		y: 258.45
+	}
+	dynamic: true
+	id: 3
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 27.75
+		y: 239.05
+	}
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 14.650001
+		y: 193.15001
+	}
+	dynamic: true
+	id: 2
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 27.85
+		y: 176
+	}
+	dynamic: true
+	id: 2
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 45.75
+		y: 126.8
+	}
+	dynamic: true
+	id: 1
+}
+{
+	class: org.spbstu.aleksandrov.model.entities.Asteroid
+	position: {
+		x: 32.75
+		y: 126.65
+	}
+	dynamic: true
+	id: 2
+}
+]

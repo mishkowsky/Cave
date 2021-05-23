@@ -13,6 +13,10 @@ public class Asteroid extends Entity {
         this.id = id;
     }
 
+    public Asteroid() {
+        super();
+    }
+
     public boolean isDynamic() {
         return dynamic;
     }
@@ -23,6 +27,6 @@ public class Asteroid extends Entity {
 
     @Override
     public String toString() {
-        return "asteroid";
+        return "asteroid_" + id;
     }
 }

@@ -17,8 +17,8 @@ public class Controller {
 
     public void processInput() {
 
-        Body rocketBody = myWorld.getPhysicBodies().get(0);
         Rocket rocket = (Rocket) myWorld.getEntities().get(0);
+        Body rocketBody = rocket.getBody();//myWorld.getPhysicBodies().get(0);
         float x = 0;
         float y = (float) (2 * Math.cos(rocketBody.getAngle()));
 

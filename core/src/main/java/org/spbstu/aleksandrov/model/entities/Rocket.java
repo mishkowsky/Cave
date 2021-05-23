@@ -1,12 +1,14 @@
 package org.spbstu.aleksandrov.model.entities;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.World;
 
 public class Rocket extends Entity {
 
     private float angle = 0;
     private float fuel = 100f;
-    float fuelConsumption;
+    private float fuelConsumption;
     private boolean refueling;
 
     public Rocket(Vector2 position) {
@@ -14,8 +16,11 @@ public class Rocket extends Entity {
         setDefaultFuelConsumption();
     }
 
-    public void decreaseFuel() {
+    public Rocket() {
+        super(new Vector2(0, 0));
+    }
 
+    public void decreaseFuel() {
         this.fuel -= fuelConsumption;
     }
 
@@ -54,6 +59,12 @@ public class Rocket extends Entity {
     }
 
     @Override
+    public void createBody(World world) {
+        super.createBody(world);
+        super.body.setType(BodyDef.BodyType.DynamicBody);
+    }
+
+    @Override
     public String toString() {
         return "rocket";
     }
@@ -76,6 +87,10 @@ public class Rocket extends Entity {
 
     public void setRefueling() {
         refueling = true;
+    }
+
+    public boolean getRefueling() {
+        return refueling;
     }
 
     public float getFuelConsumption() {

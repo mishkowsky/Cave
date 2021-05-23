@@ -26,6 +26,12 @@ public class Platform extends Entity {
         i++;
     }
 
+    public Platform() {
+        super();
+        this.id = i;
+        i++;
+    }
+
     public static void resetIdCounter() {
         i = 0;
     }
